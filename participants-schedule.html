@@ -1,0 +1,3522 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Participants Schedule</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+    :root {
+        --bg: #fbf6f7; --panel: #ffffff; --line: #f0c9d1;
+        --white: #5c2430; --muted: #8d5c66; --cyan: #8e2a3c;
+        --violet: #a33b4c; --green: #8e2a3c; --amber: #a33b4c;
+    }
+    body {
+        background: radial-gradient(ellipse at 80% 15%, #fdecef 0%, #fff8f9 48%, #ffffff 100%);
+        color: var(--white);
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+        font-weight: 500;
+        margin: 16px 12px;
+        line-height: 1.5;
+        word-break: keep-all;
+        /* 페이지 전체 스크롤 막고 → .table-wrap 안에서만 가로 스크롤 */
+        overflow-x: hidden;
+    }
+    body, body * {
+        font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif !important;
+        font-weight: 500 !important;
+    }
+    .header-container {
+        margin-top: 24px;
+        margin-bottom: 18px;
+    }
+    .header-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+    .header-top .nav-tabs {
+        margin-top: 0;
+    }
+    .eyebrow {
+        color: #a33b4c; font-size: 16px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px;
+    }
+    h1 {
+        font-size: 38px; line-height: 1.25; margin: 0; padding-left: 20px; position: relative; letter-spacing: -1.5px; font-weight: 850;
+    }
+    h1:before {
+        content: ''; position: absolute; left: 0; top: 3px; height: 42px; width: 6px;
+        background: linear-gradient(180deg,#e98998,#8e2a3c); border-radius: 0;
+    }
+    .nav-personnel {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 18px;
+        background: #8e2a3c;
+        color: #fff !important;
+        border: 1px solid #8e2a3c;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        text-decoration: none !important;
+        border-bottom: none !important;
+        white-space: nowrap;
+        transition: background 0.2s ease, border-color 0.2s ease;
+        line-height: 1.2;
+        box-sizing: border-box;
+    }
+    .nav-personnel:hover {
+        background: #6e1e2c;
+        border-color: #6e1e2c;
+        color: #fff !important;
+        border-bottom: none !important;
+    }
+
+    /* 상단 가로 스크롤 (월·화 헤더 위) — 하단 .table-wrap 과 동기화 */
+    .table-scroll-top {
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        margin-bottom: 6px;
+        border: 1px solid #f0c9d1;
+        border-radius: 0;
+        background: #fdecef;
+        -webkit-overflow-scrolling: touch;
+    }
+    .table-scroll-top-inner {
+        height: 1px;
+        pointer-events: none;
+    }
+    /* CSS Grid — 월~토 한 화면 */
+    .table-wrap {
+        border: 1px solid #f0c9d1; border-radius: 0;
+        width: 100%;
+        max-width: 100%;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        box-shadow: 0 8px 25px rgba(142,42,60,.07), 0 0 1px rgba(233,137,152,.35);
+        background: #fff;
+    }
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: 48px repeat(6, minmax(0, 1fr));
+        width: 100%;
+        min-width: 0;
+        background: #f3d0d7;
+        gap: 1px;
+    }
+    .grid-header {
+        background: linear-gradient(110deg, #8e2a3c, #c45b6c);
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: 800;
+        padding: 12px 8px;
+        text-align: center;
+        letter-spacing: 0.3px;
+        border-bottom: 2px solid #6e1e2c;
+        min-width: 0;
+    }
+    .grid-header:first-child {
+        font-size: 12px;
+        padding: 12px 2px;
+        letter-spacing: 0;
+    }
+    .grid-time {
+        background: #fdecef;
+        color: #a24a5c;
+        font-weight: 750;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+        font-size: 11px;
+        padding: 0 1px;
+        line-height: 1;
+        text-align: center;
+    }
+    .grid-time .time-start,
+    .grid-time .time-end {
+        display: block;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.02em;
+    }
+    .grid-time .time-sep {
+        display: block;
+        font-size: 9px;
+        font-weight: 700;
+        color: #c48a96;
+        margin: -2px 0;
+    }
+    .grid-cell {
+        background: rgba(255,255,255,.94);
+        padding: 6px 8px;
+        font-size: 15px;
+        line-height: 1.55;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        color: #17304b;
+    }
+    .grid-cell.empty {
+        background: #e8e8e8;
+    }
+    /* 일정 구분용 작은 네모 */
+    .sq {
+        display: inline-block;
+        width: 6px;
+        height: 6px;
+        background: #000;
+        margin-right: 6px;
+        vertical-align: middle;
+    }
+    /* 월요일: 본문 글씨 #000 통일 (배지·링크 제외) */
+    .grid-cell.mon-day .agenda-slot,
+    .grid-cell.mon-day .agenda-title,
+    .grid-cell.mon-day .agenda-detail,
+    .grid-cell.mon-day .agenda-detail b,
+    .grid-cell.mon-day .text-red,
+    .grid-cell.mon-day .highlight-move,
+    .grid-cell.mon-day .route-flow,
+    .grid-cell.mon-day .route-step {
+        color: #000;
+    }
+    /* 월~목 URL 링크 앰버 */
+    .grid-cell[style*="grid-column: 2"] a,
+    .grid-cell[style*="grid-column: 3"] a,
+    .grid-cell[style*="grid-column: 4"] a,
+    .grid-cell[style*="grid-column: 5"] a,
+    .grid-cell[style*="grid-column: 2"] a.tour-link,
+    .grid-cell[style*="grid-column: 3"] a.tour-link,
+    .grid-cell[style*="grid-column: 4"] a.tour-link,
+    .grid-cell[style*="grid-column: 5"] a.tour-link {
+        color: #d97706;
+        font-weight: 700;
+    }
+    .grid-cell[style*="grid-column: 2"] a:hover,
+    .grid-cell[style*="grid-column: 3"] a:hover,
+    .grid-cell[style*="grid-column: 4"] a:hover,
+    .grid-cell[style*="grid-column: 5"] a:hover,
+    .grid-cell[style*="grid-column: 2"] a.tour-link:hover,
+    .grid-cell[style*="grid-column: 3"] a.tour-link:hover,
+    .grid-cell[style*="grid-column: 4"] a.tour-link:hover,
+    .grid-cell[style*="grid-column: 5"] a.tour-link:hover {
+        color: #b45309;
+        border-bottom-color: #b45309;
+    }
+    .grid-cell.mon-day .highlight-move {
+        background: transparent;
+        padding: 0;
+    }
+    /* 월요일 [코스] = 화요일 [일정] 스타일 유지 */
+    .grid-cell.mon-day .section-label,
+    .grid-cell.mon-day .section-label b {
+        color: #087db8;
+    }
+    .grid-cell.mon-day .ws-line,
+    .grid-cell.mon-day .ws-line-time,
+    .grid-cell.mon-day .ws-line-body {
+        color: #087db8;
+    }
+    .grid-cell.mon-day .ws-line-time.break {
+        color: #5ba3c9;
+    }
+    /* 일정 칸 상단 대상자 한 줄 */
+    .participants {
+        display: block;
+        background: #f1f5f9;
+        color: #334155;
+        font-size: 13px;
+        font-weight: 650;
+        padding: 6px 10px;
+        border-radius: 0;
+        margin-bottom: 10px;
+        line-height: 1.45;
+    }
+    .participants b {
+        color: #111;
+        font-weight: 800;
+        margin-right: 4px;
+    }
+    .participants-note {
+        display: block;
+        background: #e3f2fd;
+        color: #087db8;
+        font-size: 13px;
+        font-weight: 650;
+        padding: 6px 10px;
+        border-radius: 0;
+        margin-bottom: 10px;
+        line-height: 1.45;
+        border: 1px solid #88c0df;
+    }
+    .participants-note b {
+        color: #0b6fa3;
+        font-weight: 800;
+        margin-right: 4px;
+    }
+    .participants-purple {
+        display: block;
+        background: #f3e8ff;
+        color: #7c3aed;
+        font-size: 13px;
+        font-weight: 650;
+        padding: 6px 10px;
+        border-radius: 0;
+        margin-bottom: 10px;
+        line-height: 1.45;
+        border: 1px solid #e9d5ff;
+    }
+
+    /* Common Styles */
+    .agenda-slot { margin-bottom: 15px; }
+    .agenda-slot:last-child { margin-bottom: 0; }
+    .agenda-split {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+    }
+    .agenda-split > .agenda-slot,
+    .agenda-split-col > .agenda-slot {
+        flex: 1;
+        min-width: 0;
+        margin-bottom: 0;
+        padding: 8px;
+        border: 1px solid #f0c9d1;
+        border-radius: 0;
+        background: #fffafb;
+    }
+    .agenda-split.split-vline {
+        gap: 0;
+    }
+    .agenda-split.split-vline > .agenda-slot {
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        padding: 2px 10px;
+    }
+    .agenda-split.split-vline > .agenda-slot:first-child {
+        border-right: 1px solid #e7b4be;
+    }
+    .agenda-split.split-vline > .agenda-slot.split-green {
+        background: transparent;
+        border-color: transparent;
+        border-right: none;
+    }
+    .agenda-split-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .agenda-split-col > .agenda-slot {
+        flex: 0 0 auto;
+    }
+    .agenda-slot.split-green {
+        background: #e7f5ef;
+        border-color: #a2d0bd;
+    }
+    .agenda-slot.split-green .agenda-title {
+        color: #087f72;
+    }
+    .agenda-split-col .route-arrow {
+        text-align: center;
+        margin: 6px 0;
+        color: #087f72;
+        font-weight: 800;
+    }
+    .split-green-detail {
+        padding: 8px;
+        border: 1px solid #a2d0bd;
+        border-radius: 0;
+        background: #f3faf7;
+    }
+    .agenda-title { font-weight: 700; color: #294762; font-size: 17px; display: block; margin-bottom: 6px; }
+    .agenda-detail { display: block; font-size: 14.5px; color: #5d7690; }
+    .agenda-detail b { color: #087db8; font-weight: 600; }
+    .badge {
+        display: inline-block; padding: 4px 10px; background: #e3f2fd; border: 1px solid #88c0df;
+        border-radius: 0; font-size: 13.5px; color: #087db8; font-weight: 650; margin-bottom: 8px;
+    }
+    .badge-green {
+        background: #e7f5ef; border-color: #a2d0bd; color: #087f72;
+    }
+    .badge-gray {
+        background: #f1f5f9; border-color: #cbd5e1; color: #475569;
+    }
+    .badge-meal {
+        background: #fff7ed; border-color: #fdba74; color: #c2410c;
+    }
+    .badge-red {
+        background: #f5f3ff; border-color: #c4b5fd; color: #6d28d9;
+    }
+    .badge-visit {
+        background: #f5f3ff; border-color: #c4b5fd; color: #6d28d9;
+    }
+    .badge-alert {
+        background: #fef2f2; border-color: #fca5a5; color: #dc2626;
+    }
+    .badge-hotel {
+        background: #64748b; border-color: #475569; color: #fff;
+    }
+    .badge-checkout {
+        background: #64748b; border-color: #475569; color: #fff;
+    }
+    .badge-culture {
+        background: #fff; border-color: #94a3b8; color: #000;
+    }
+    .highlight-move {
+        display: inline-block;
+        background: #fff1f2;
+        color: #e11d48;
+        font-weight: 700;
+        padding: 3px 8px;
+        border-radius: 0;
+        border: 1px solid #fda4af;
+        margin: 4px 0;
+    }
+    .general-move {
+        display: inline-block;
+        color: #087f72;
+        font-weight: 700;
+        background: #e7f5ef;
+        padding: 2px 7px;
+        border-radius: 0;
+        border: 1px solid #a2d0bd;
+        margin: 2px 0;
+    }
+    /* 심플 모노 버스 표기 */
+    .bus-ico {
+        display: inline-block;
+        font-size: 11px;
+        font-weight: 800;
+        color: #fff;
+        background: #111;
+        border: 1px solid #111;
+        border-radius: 0;
+        padding: 1px 5px;
+        margin-right: 4px;
+        letter-spacing: 0;
+        vertical-align: 1px;
+        line-height: 1.4;
+    }
+    .plane-ico {
+        display: inline-block;
+        margin-right: 4px;
+        font-size: 14px;
+        line-height: 1;
+        vertical-align: -1px;
+    }
+    .route-note {
+        display: block;
+        font-size: 14px;
+        color: #087f72;
+        font-weight: 650;
+    }
+    .route-note.inline {
+        display: inline;
+        margin: 0 0 0 8px;
+        vertical-align: middle;
+    }
+    .text-red {
+        color: #dc2626;
+        font-weight: 700;
+    }
+    .text-center { text-align: center; }
+    a {
+        color: #d97706;
+        text-decoration: none;
+        border-bottom: 1px solid transparent;
+        transition: all 0.2s ease;
+    }
+    a:hover {
+        color: #b45309;
+        border-bottom-color: #b45309;
+    }
+    a.tour-link {
+        color: #d97706;
+        font-weight: 800;
+    }
+    .workshop-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        line-height: 1.45;
+        margin-top: 8px;
+    }
+    .workshop-table th,
+    .workshop-table td {
+        border: 1px solid #94a3b8;
+        padding: 5px 7px;
+        vertical-align: top;
+        text-align: left;
+    }
+    .workshop-table th {
+        background: #dbeafe;
+        color: #17304b;
+        font-weight: 800;
+        font-size: 11px;
+        white-space: nowrap;
+    }
+    .workshop-table .ws-time {
+        white-space: nowrap;
+        font-weight: 650;
+        color: #417395;
+    }
+    .workshop-table .ws-cat {
+        font-weight: 700;
+        color: #17304b;
+        white-space: nowrap;
+    }
+    .workshop-footnote {
+        margin: 10px 0 0;
+        font-size: 12px;
+        color: #58708a;
+        font-weight: 650;
+        line-height: 1.45;
+    }
+    .ws-flow {
+        margin: 10px 0 4px 6px;
+        padding-left: 12px;
+        border-left: 2px solid #88c0df;
+    }
+    .ws-flow .ws-block {
+        margin-top: 0;
+    }
+    .ws-flow .route-arrow {
+        margin: 4px 0;
+        text-align: center;
+    }
+    .ws-block {
+        margin-top: 9px;
+        border: 1px solid #b8d7ec;
+        border-radius: 0;
+        overflow: hidden;
+        background: #fff;
+    }
+    .ws-block-time {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        background: linear-gradient(110deg, #17304b, #254a70);
+        color: #fff;
+        font-weight: 800;
+        font-size: 13px;
+        padding: 7px 10px;
+        letter-spacing: 0.02em;
+    }
+    .ws-block-time.break {
+        background: linear-gradient(110deg, #7a8694, #9aa5b1);
+    }
+    .ws-block-body {
+        padding: 8px 10px 10px;
+        font-size: 13px;
+        line-height: 1.55;
+        color: #294762;
+    }
+    .ws-block-body b {
+        color: #087db8;
+        font-weight: 700;
+    }
+    .ws-block-meta {
+        display: block;
+        margin-top: 3px;
+    }
+    .ws-block-meta:first-child {
+        margin-top: 0;
+    }
+    /* 한 줄 타임라인: 왼쪽 시간(~1/3) / 오른쪽 내용(~2/3)
+       고정 em이면 출력용 좁은 열에서 1:1처럼 보이므로 % 비율 고정 */
+    .ws-line {
+        display: grid;
+        grid-template-columns: 32% 1fr;
+        column-gap: 6px;
+        align-items: baseline;
+        padding: 2px 0;
+        font-size: 12px;
+        line-height: 1.35;
+        color: #087db8;
+    }
+    .ws-line-time {
+        font-weight: 800;
+        color: #087db8;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+        letter-spacing: -0.02em;
+        min-width: 0;
+        overflow: hidden;
+    }
+    .ws-line-time.break {
+        color: #5ba3c9;
+    }
+    .ws-line-body {
+        min-width: 0;
+        color: #087db8;
+        font-weight: 500;
+    }
+    .ws-line-body b {
+        font-weight: 500;
+    }
+    .ws-flow .ws-line + .route-arrow,
+    .ws-flow .route-arrow + .ws-line {
+        margin-top: 0;
+    }
+    /* 타이트 타임라인 (목 10시 AKTD 1부 등) */
+    .ws-flow.compact {
+        margin: 6px 0 2px 2px;
+        padding-left: 8px;
+    }
+    .ws-flow.compact .route-arrow {
+        margin: 1px 0;
+        font-size: 11px;
+        line-height: 1;
+        color: #7aa8c4;
+    }
+    .ws-flow.compact .ws-block {
+        border-radius: 0;
+    }
+    .ws-flow.compact .ws-block-time {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
+    .ws-flow.compact .ws-block-body {
+        padding: 4px 8px 5px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+    .ws-flow.compact .ws-block-meta {
+        margin-top: 1px;
+    }
+    /* 좁은 분할칸: 시간 → 내용 세로 배치 */
+    .ws-flow.stack .ws-line {
+        grid-template-columns: 1fr;
+        row-gap: 0;
+    }
+    .ws-flow.stack .ws-line-time {
+        overflow: visible;
+    }
+    a.tour-link:hover {
+        color: #b45309;
+        border-bottom-color: #b45309;
+    }
+    .route-flow {
+        margin: 10px 0 10px 6px;
+        padding-left: 12px;
+        border-left: 2px solid #88c0df;
+        font-size: 14px;
+        color: #475569;
+        line-height: 1.5;
+    }
+    .route-arrow {
+        color: #087db8;
+        font-size: 12px;
+        margin: 2px 0 2px -1px;
+    }
+    .route-flow.compact {
+        margin: 4px 0 4px 2px;
+        padding-left: 8px;
+        font-size: 12.5px;
+        line-height: 1.3;
+    }
+    .route-flow.compact .route-step {
+        display: block;
+    }
+    .route-flow.compact .route-arrow {
+        display: block;
+        margin: 0;
+        padding: 0;
+        font-size: 10px;
+        line-height: 1;
+        color: #7aa8c4;
+    }
+    .capacity-note {
+        color: #5d7690;
+        font-size: 13.5px;
+    }
+
+
+    .lang-panel { display: none; }
+    .lang-panel.is-active { display: block; }
+
+    /* ===== Tabs / Views ===== */
+    .view { display: none; }
+    .view.is-active { display: block; }
+    .nav-tabs {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        align-items: stretch;
+        width: min(560px, 100%);
+        min-width: 360px;
+    }
+    .nav-shortcut-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        width: 100%;
+    }
+    .nav-tabs-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        width: 100%;
+        align-items: stretch;
+    }
+    .nav-helper-note {
+        margin: 0;
+        padding: 0 2px;
+        font-size: 12.5px;
+        line-height: 1.4;
+        color: #8e2a3c;
+        font-weight: 600;
+        text-align: left;
+    }
+    .nav-shortcut {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-height: 44px;
+        padding: 8px 10px;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #c4b5fd;
+        background: #f5f3ff;
+        color: #6d28d9 !important;
+        font-family: inherit;
+        line-height: 1.25;
+        white-space: normal;
+        text-decoration: none !important;
+        box-sizing: border-box;
+        text-align: center;
+    }
+    .nav-shortcut:hover {
+        background: #ede9fe;
+        border-color: #8b5cf6;
+        color: #5b21b6 !important;
+    }
+    .nav-tabs-row > .nav-tab,
+    .nav-tabs-row > .btn-excel,
+    .nav-tabs-row > .btn-print {
+        width: 100%;
+        justify-content: center;
+        box-sizing: border-box;
+        min-width: 0;
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .nav-tab {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #8e2a3c;
+        background: #8e2a3c;
+        color: #fff;
+        font-family: inherit;
+        line-height: 1.2;
+    }
+    .nav-tab:hover {
+        background: #6e1e2c;
+        border-color: #6e1e2c;
+    }
+    .nav-tab.is-active {
+        background: #2563eb;
+        border-color: #1d4ed8;
+        color: #fff;
+        cursor: default;
+    }
+    .nav-tab.is-active:hover {
+        background: #2563eb;
+        border-color: #1d4ed8;
+    }
+    .btn-print {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #8e2a3c;
+        background: #8e2a3c;
+        color: #fff;
+        font-family: inherit;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .btn-print:hover {
+        background: #6e1e2c;
+        border-color: #6e1e2c;
+    }
+    .btn-excel {
+        display: inline-flex;
+        align-items: center;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #8e2a3c;
+        background: #8e2a3c;
+        color: #fff;
+        font-family: inherit;
+        line-height: 1.2;
+        white-space: nowrap;
+    }
+    .btn-excel:hover {
+        background: #6e1e2c;
+        border-color: #6e1e2c;
+    }
+    .btn-excel:disabled,
+    .btn-print:disabled {
+        opacity: 0.65;
+        cursor: wait;
+    }
+
+    /* ===== Print / PDF ===== */
+    @page {
+        size: A4 portrait;
+        margin: 5mm;
+    }
+    #print-capture-root {
+        position: fixed;
+        left: -100000px;
+        top: 0;
+        width: 1200px;
+        background: #fff;
+        z-index: -1;
+    }
+    #print-image-root {
+        display: none;
+    }
+    #print-image-root img {
+        width: 100%;
+        height: auto;
+        display: block;
+    }
+    @media print {
+        .no-print { display: none !important; }
+        html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: #fff !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* 일정표: A4 세로 1장, 비율 유지(글자 늘어남 방지), 시간~토 전체 포함 */
+        body.printing-schedule-image > *:not(#print-image-root) {
+            display: none !important;
+        }
+        body.printing-schedule-image,
+        body.printing-schedule-image html {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        body.printing-schedule-image #print-image-root {
+            display: flex !important;
+            align-items: flex-start;
+            justify-content: center;
+            position: fixed !important;
+            left: 0 !important;
+            top: 0 !important;
+            width: 200mm !important;
+            height: 287mm !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+        }
+        body.printing-schedule-image #print-image-root img {
+            width: 97% !important;
+            height: auto !important;
+            max-width: 97% !important;
+            max-height: 287mm !important;
+            object-fit: contain !important;
+            object-position: center top !important;
+            margin: 0 auto !important;
+            display: block !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* 인원관리: HTML 표 그대로 */
+        body.printing-personnel .view:not(.is-active) { display: none !important; }
+        body.printing-personnel .header-container { margin-bottom: 8px !important; }
+        body.printing-personnel h1 { font-size: 16px !important; padding-left: 10px !important; }
+        body.printing-personnel .block {
+            overflow: visible !important;
+            box-shadow: none !important;
+            border-radius: 4px !important;
+            padding: 8px 6px 10px !important;
+            margin-bottom: 8px !important;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+        body.printing-personnel .block-title { font-size: 11px !important; margin-bottom: 6px !important; }
+        body.printing-personnel .block-sub { font-size: 9px !important; margin: -2px 0 6px !important; }
+        body.printing-personnel .people-table {
+            min-width: 0 !important;
+            width: 100% !important;
+            font-size: 8px !important;
+        }
+        body.printing-personnel .people-table th,
+        body.printing-personnel .people-table td { padding: 3px 2px !important; }
+        body.printing-personnel .contact-card {
+            padding: 6px 8px !important;
+            font-size: 8px !important;
+            break-inside: avoid;
+        }
+        a { color: inherit !important; text-decoration: none !important; }
+    }
+
+    /* ===== Personnel (merged) ===== */
+    .block {
+        background: #fff;
+        border: 1px solid #b8d7ec;
+        border-radius: 15px;
+        box-shadow: 0 8px 25px rgba(63,124,169,.07);
+        padding: 22px 24px 26px;
+        margin-bottom: 24px;
+        overflow-x: auto;
+    }
+    .block-title {
+        margin: 0 0 14px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #17304b;
+    }
+    .people-table {
+        width: 100%;
+        min-width: 1200px;
+        border-collapse: collapse;
+        table-layout: fixed;
+        font-size: 13.5px;
+    }
+    .people-table th,
+    .people-table td {
+        border: 1px solid #94a3b8;
+        padding: 9px 10px;
+        vertical-align: middle;
+        text-align: center;
+    }
+    .people-table th {
+        background: #dbeafe;
+        color: #17304b;
+        font-weight: 800;
+    }
+    .people-table.table-header-yellow thead th {
+        background: #fef08a;
+    }
+    /* 열 비율 합 100% — 연결성(담당+소속)과 병합표(담당/소속) 세로선 정렬 */
+    .people-table .col-no,
+    .people-table col.col-no { width: 3%; }
+    .people-table .col-agency,
+    .people-table col.col-agency { width: 10%; }
+    .people-table .col-org,
+    .people-table col.col-org { width: 11%; }
+    .people-table .col-agency-org,
+    .people-table col.col-agency-org { width: 21%; }
+    .people-table .col-name,
+    .people-table .col-passport,
+    .people-table col.col-name,
+    .people-table col.col-passport {
+        width: 12%;
+    }
+    .people-table .col-title,
+    .people-table col.col-title { width: 13%; }
+    .people-table .col-note,
+    .people-table col.col-note { width: 11%; }
+    .people-table .col-check,
+    .people-table col.col-check { width: 7%; }
+    .people-table.table-thinktank col.col-check { width: 6%; }
+    .people-table.table-thinktank col.col-hotel-note { width: 10%; }
+    .people-table.table-thinktank th.col-hotel-note {
+        white-space: nowrap;
+    }
+    .people-table.table-hotel-cols tbody td:nth-last-child(3) {
+        white-space: nowrap;
+    }
+    .people-table tr.col-size-row,
+    .people-table tr.col-size-row th,
+    .people-table tr.col-size-row td {
+        height: 0 !important;
+        max-height: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        line-height: 0 !important;
+        font-size: 0 !important;
+        overflow: hidden;
+        background: transparent !important;
+    }
+    .people-table thead th:empty {
+        border-left-color: transparent;
+        background: #dbeafe;
+        font-size: 0;
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .people-table.table-header-yellow thead th:empty {
+        background: #fef08a;
+    }
+    .block-sub {
+        margin: -6px 0 14px;
+        color: #087db8;
+        font-size: 14px;
+        font-weight: 700;
+    }
+    .people-table thead tr.table-cap-note th {
+        background: transparent;
+        border: none;
+        color: #ea580c;
+        font-size: 14px;
+        font-weight: 700;
+        padding: 0 2px 4px;
+        vertical-align: bottom;
+        white-space: nowrap;
+    }
+    /* 표 안 colspan 캡션 대신 외부 그리드로 올려 열너비 왜곡 방지 */
+
+    /* 연결성: 담당기관+소속 = 싱크탱크 소속(21%)과 우측 경계 정렬 */
+    /* 순환경제: 직위까지 한국표(table-thinktank)와 동일, 비고↓ → 항공비고↑ */
+    .people-table.table-circular col.col-no,
+    .people-table.table-circular .col-no { width: 3%; }
+    .people-table.table-circular col.col-agency-org,
+    .people-table.table-circular .col-agency-org { width: 19%; }
+    .people-table.table-circular col.col-name,
+    .people-table.table-circular .col-name { width: 11%; }
+    .people-table.table-circular col.col-passport,
+    .people-table.table-circular .col-passport { width: 12%; }
+    .people-table.table-circular col.col-title,
+    .people-table.table-circular .col-title { width: 12%; }
+    .people-table.table-circular col.col-note,
+    .people-table.table-circular .col-note,
+    .people-table.table-circular col.col-check,
+    .people-table.table-circular .col-check,
+    .people-table.table-circular col.col-flight-note,
+    .people-table.table-circular .col-flight-note { width: 8.6%; }
+    .people-table.table-circular th.col-flight-note,
+    .people-table.table-circular tbody td:nth-last-child(3) {
+        white-space: nowrap;
+    }
+    /* 인원표 데이터 행 글씨 통일 */
+    .people-table tbody td {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .people-table.table-connect col.col-agency { width: 10%; }
+    .people-table.table-connect col.col-org { width: 11%; }
+    .people-table.table-connect col.col-name,
+    .people-table.table-connect col.col-passport { width: 12%; }
+    .people-table.table-connect col.col-title { width: 13%; }
+    .people-table.table-connect col.col-note { width: 11%; }
+    .people-table.table-connect col.col-check { width: 6%; }
+    .people-table.table-connect col.col-hotel-note { width: 10%; }
+
+    .table-hotel-cap {
+        display: grid;
+        grid-template-columns: 3% 21% 12% 12% 13% 11% 6% 10% 6% 6%;
+        width: 100%;
+        min-width: 1200px;
+        margin: 0 0 2px;
+    }
+    .table-hotel-cap-label {
+        grid-column: 7;
+        color: #ea580c;
+        font-size: 14px;
+        font-weight: 700;
+        text-align: center;
+        white-space: nowrap;
+        line-height: 1.2;
+    }
+    .people-table.table-thinktank col.col-no { width: 3%; }
+    .people-table.table-thinktank col.col-agency-org { width: 21%; }
+    .people-table.table-thinktank col.col-name,
+    .people-table.table-thinktank col.col-passport { width: 12%; }
+    .people-table.table-thinktank col.col-title { width: 13%; }
+    .people-table.table-thinktank col.col-note { width: 11%; }
+    .people-table.table-thinktank col.col-check { width: 6%; }
+    .people-table.table-thinktank col.col-hotel-note { width: 10%; }
+    /* 한국표: 소속|이름 세로선을 왼쪽으로 */
+    .people-table.table-korea col.col-agency-org { width: 19%; }
+    .people-table.table-korea col.col-name { width: 12%; }
+    .people-table.table-korea col.col-passport { width: 11%; }
+    .people-table.table-korea col.col-title { width: 12%; }
+    .people-table.table-korea col.col-note { width: 13%; }
+    .people-table.table-korea col.col-lecturer { width: 8%; }
+    .contacts-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        margin: 0 0 22px;
+        align-items: stretch;
+    }
+    .contact-card {
+        flex: 1 1 260px;
+        padding: 14px 18px;
+        background: #fff;
+        border: 1px solid #b8d7ec;
+        border-radius: 12px;
+        color: #17304b;
+        font-size: 14px;
+        font-weight: 700;
+        line-height: 1.65;
+    }
+    .contact-card-grid {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        column-gap: 10px;
+        row-gap: 4px;
+        align-items: start;
+    }
+    .contact-card-label {
+        white-space: nowrap;
+    }
+    .contact-card-label-rows-2 {
+        grid-row: 1 / span 2;
+    }
+    .contact-card-label-rows-3 {
+        grid-row: 1 / span 3;
+    }
+    .contact-card-label-rows-4 {
+        grid-row: 1 / span 4;
+    }
+    .contact-card-person {
+        margin: 0;
+    }
+    .mark-o {
+        color: #c026d3;
+        font-weight: 400;
+    }
+    /* 호텔예약 칸(날짜 포함) 볼드 제거 */
+    .people-table td.mark-o {
+        font-weight: 400;
+    }
+    .mark-needed {
+        color: #c026d3;
+        font-weight: 400;
+    }
+    .text-purple-800 { color: #6b21a8; }
+    .text-teal-700 { color: #0f766e; }
+    .text-orange-600 { color: #ea580c; }
+    .people-table td.na-bar {
+        background: #eef2f7;
+        color: #64748b;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+    }
+    .people-table td.na-bar.mark-video {
+        color: #dc2626;
+        font-weight: 800;
+    }
+    .name-hilite {
+        color: #db2777;
+        font-weight: 700;
+    }
+    .people-table .name-sub {
+        display: block;
+        margin-top: 5px;
+        font-size: 10px;
+        color: #58708a;
+        font-weight: 600;
+        line-height: 1.35;
+    }
+    .people-table td.name,
+    .people-table td.passport,
+    .people-table td.title {
+        text-align: left;
+    }
+    .people-table td.org,
+    .people-table td.agency-org,
+    .people-table td.note {
+        font-weight: 700;
+        background: #f8fbfe;
+    }
+    .people-table.table-circular td.note {
+        font-weight: 400;
+    }
+    /* 한국표: 연락처(e-mail) / 강의자 데이터 글씨 통일 */
+    .people-table.table-korea tbody td.note,
+    .people-table.table-korea tbody td:last-child {
+        font-size: 11px;
+        line-height: 1.3;
+        font-weight: 400;
+    }
+    .people-table.table-korea thead th.col-note,
+    .people-table.table-korea thead th.col-lecturer {
+        font-size: 11px;
+    }
+    .placeholder {
+        color: #94a3b8;
+        font-size: 13.5px;
+        margin: 0;
+    }
+</style>
+</head>
+<body>
+    <div class="header-container">
+        <div class="header-top">
+            <h1 id="page-title">(tentative) Circular Economy Participants Schedule</h1>
+            <div class="nav-tabs no-print">
+                <div class="nav-shortcut-row">
+                    <a class="nav-shortcut" href="#" id="nav-shortcut-left" title="Circular Economy Workshop">Circular Economy Workshop ↗</a>
+                    <a class="nav-shortcut" href="https://aktd-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="ASEAN–Korea Think Tank Dialogue">ASEAN–Korea Think Tank Dialogue ↗</a>
+                </div>
+                <div class="nav-tabs-row">
+                    <button type="button" class="nav-tab is-active" data-lang="en" id="btn-lang-en">English</button>
+                    <button type="button" class="nav-tab" data-lang="ko" id="btn-lang-ko">Korea</button>
+                    <button type="button" class="btn-excel" id="btn-excel" title="Export schedule to Excel">Excel Export</button>
+                    <button type="button" class="btn-print" id="btn-print" title="Export as A4 portrait PDF">PDF Export</button>
+                </div>
+                <p class="nav-helper-note" id="nav-helper-note">Available online (If offline, export via Excel or PDF above in advance)</p>
+            </div>
+        </div>
+    </div>
+    
+        <div id="view-schedule" class="view is-active">
+    <div class="table-scroll-top no-print" id="table-scroll-top" aria-hidden="true">
+        <div class="table-scroll-top-inner" id="table-scroll-top-inner"></div>
+    </div>
+
+    <div id="panel-ko" class="lang-panel">
+    <div class="table-wrap" id="table-wrap">
+        <div class="schedule-grid">
+
+            <!--
+            ============================================================
+            [시간 행 가이드]  grid-row 번호 = 아래 시간대
+            ------------------------------------------------------------
+              grid-row: 1  = 헤더 (요일)
+              grid-row: 2  = 08:00 - 09:00
+              grid-row: 3  = 09:00 - 10:00
+              grid-row: 4  = 10:00 - 11:00
+              grid-row: 5  = 11:00 - 12:00
+              grid-row: 6  = 12:00 - 13:00
+              grid-row: 7  = 13:00 - 14:00
+              grid-row: 8  = 14:00 - 15:00
+              grid-row: 9  = 15:00 - 16:00
+              grid-row: 10 = 16:00 - 17:00
+              grid-row: 11 = 17:00 - 18:00
+              grid-row: 12 = 18:00 - 19:00
+              grid-row: 13 = 19:00 ~
+              grid-row: 14 = 20:00
+              grid-row: 15 = 21:30
+              grid-row: 16 = 22:00
+            ------------------------------------------------------------
+            [요일 열 가이드]  grid-column 번호
+              Col 1 = 시간 / Col 2 = 월 / Col 3 = 화 / Col 4 = 수
+              Col 5 = 목 / Col 6 = 금 / Col 7 = 토
+            ------------------------------------------------------------
+            여러 시간대에 걸칠 때: grid-row: 시작 / 끝+1
+              예) 14:00~16:00 → style="grid-row: 8 / 10;"
+            ※ 대상자: 각 일정 칸 안 상단에 <span class="participants"> 사용
+            ============================================================
+            -->
+
+            <!-- ==================== 헤더 (Row 1) ==================== -->
+            <div class="grid-header" style="grid-column: 1; grid-row: 1;">시간</div>
+            <div class="grid-header" style="grid-column: 2; grid-row: 1;">23일 (월)</div>
+            <div class="grid-header" style="grid-column: 3; grid-row: 1;">24일 (화)</div>
+            <div class="grid-header" style="grid-column: 4; grid-row: 1;">25일 (수)</div>
+            <div class="grid-header" style="grid-column: 5; grid-row: 1;">26일 (목)</div>
+            <div class="grid-header" style="grid-column: 6; grid-row: 1;">27일 (금)</div>
+            <div class="grid-header" style="grid-column: 7; grid-row: 1;">28일 (토)</div>
+
+            <!-- ==================== 시간 컬럼 (Col 1) | 08:00 ~ 19:00 ==================== -->
+            <div class="grid-time" style="grid-column: 1; grid-row: 2;"><span class="time-start">08:00</span><span class="time-sep">~</span><span class="time-end">09:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 3;"><span class="time-start">09:00</span><span class="time-sep">~</span><span class="time-end">10:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 4;"><span class="time-start">10:00</span><span class="time-sep">~</span><span class="time-end">11:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 5;"><span class="time-start">11:00</span><span class="time-sep">~</span><span class="time-end">12:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 6;"><span class="time-start">12:00</span><span class="time-sep">~</span><span class="time-end">13:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 7;"><span class="time-start">13:00</span><span class="time-sep">~</span><span class="time-end">14:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 8;"><span class="time-start">14:00</span><span class="time-sep">~</span><span class="time-end">15:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 9;"><span class="time-start">15:00</span><span class="time-sep">~</span><span class="time-end">16:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 10;"><span class="time-start">16:00</span><span class="time-sep">~</span><span class="time-end">17:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 11;"><span class="time-start">17:00</span><span class="time-sep">~</span><span class="time-end">18:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 12;"><span class="time-start">18:00</span><span class="time-sep">~</span><span class="time-end">19:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 13;"><span class="time-start">19:00</span><span class="time-sep">~</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 14;"><span class="time-start">20:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 15;"><span class="time-start">21:30</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 16;"><span class="time-start">22:00</span></div>
+
+
+            <!-- ============================================================
+                 월요일 23일 (Col 2)
+                 ============================================================ -->
+
+            <!-- [월] 08:00-09:00 | 입국절차 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>입국</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 06:50 or 07:50</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 09:00-11:00 | 인천공항 사우나/기도 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 3 / 5;">
+                <div class="agenda-slot">
+                    <span class="agenda-title" style="font-size: 14px; margin-bottom: 2px; color:#000;"><span class="sq"></span>인천공항 내 사우나/기도시간</span>
+                </div>
+            </div>
+
+            <!-- [월] 11:00-12:00 | 이동: 인천공항 → 중식장소 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 5;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 인천공항→중식장소 (30분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 12:00-13:00 | 중식 (괭이부리마을) -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">중식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 13:00-14:00 | 이동: 중식장소 → 수도권매립지관리공사 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 7;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 중식장소→수도권매립지관리공사 (20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 14:00-16:00 | 기관방문1: 수도권매립지관리공사 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 8 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">기관방문1</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://www.slc.or.kr/slc/csc/ser/slExcur/slExcur00.do#/eyJ3ZWJQYWdlTm8iOiI0MTciLCJ0YWJObyI6MH0=" target="_blank" class="tour-link">수도권매립지관리공사</a><br>
+                        <span class="sq"></span>프로그램: 공사 견학<br>
+                        <span class="sq"></span>위치: 인천 검단구 자원순환로 170<br>
+                        <span class="sq"></span>투어시간: 14:00~15:30<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2<br>
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[코스]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) SLC 홍보관 20분</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) 현장설명 60~80분</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">제1매립장</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">침출수처리장</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">50MW발전시설</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">제2매립장</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">제3매립장</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">자원순환에너지타운</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">통합계량대</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">양묘온실</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [월] 16:00-17:00 | 이동: 수도권매립지관리공사 → 호텔 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 10;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 수도권매립지관리공사→호텔 (1시간 20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 17:00-18:00 | 호텔 체크인 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 11;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">풀만 체크인</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://naver.me/5MVzZ9gW" target="_blank">앰배서더 서울 풀만 호텔</a><br>
+                        <span class="sq"></span>위치: 서울 중구 동호로 287<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                </div>
+            </div>
+
+            <!-- [월] 18:00-19:00 | 이동: 호텔 → 석식장소 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 호텔→석식장소 (10분)</span>
+                </div>
+            </div>
+
+            <!-- [월] 19:00 ~ | 환영만찬 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">환영만찬</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 화요일 24일 (Col 3)
+                 ============================================================ -->
+
+            <!-- [화] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">풀만호텔조식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 09:00-10:00 | 이동 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 호텔→한국생산성본부 (20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 10:00-12:00 | 순환경제 워크숍 (오전) -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">순환경제 워크숍</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://naver.me/GkRvOMrP" target="_blank">한국생산성본부</a><br>
+                        <span class="sq"></span>위치: 서울 종로구 새문안로5가길 32 4층<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[일정]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:30~09:40</span>
+                            <span class="ws-line-body">개회사</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:40~09:55</span>
+                            <span class="ws-line-body">환영사 및 인증원 소개</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:55~10:50</span>
+                            <span class="ws-line-body">한국의 순환경제 정책과 법제도</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time break">10:50~11:00</span>
+                            <span class="ws-line-body">휴식</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">11:00~11:55</span>
+                            <span class="ws-line-body">순환경제 산업 동향과 기업 대응</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [화] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">중식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 13:00-16:00 | 순환경제 워크숍 (오후) -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 7 / 10;">
+                <div class="agenda-slot">
+                    <span class="agenda-detail section-label" style="margin-top: 0; font-size: 14px;">
+                        <b>[일정]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line">
+                            <span class="ws-line-time">13:30~14:25</span>
+                            <span class="ws-line-body">순환경제 관련 검·인증 소개</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time break">14:25~14:35</span>
+                            <span class="ws-line-body">휴식</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">14:35~15:30</span>
+                            <span class="ws-line-body">자원효율성 관리 검증(REMS)</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">15:30~15:50</span>
+                            <span class="ws-line-body">전체 질의응답</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">15:50~16:00</span>
+                            <span class="ws-line-body">폐회</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [화] 16:00-18:00 | 문화체험 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 10 / 12;">
+                <div class="agenda-slot">
+                    <span class="badge badge-culture" style="font-size:14px;">문화체험</span>
+                </div>
+            </div>
+
+            <!-- [화] 18:00-19:00 | 이동: 광화문 → 석식장소 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 광화문→석식장소 (20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 19:00 ~ | 석식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">석식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 수요일 25일 (Col 4)
+                 ============================================================ -->
+
+            <!-- [수] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">풀만호텔조식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 09:00-10:00 | 이동(30분) -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 호텔→서울에너지드림센터 (30분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 10:00-12:00 | 기관방문2: 서울에너지드림센터 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">기관방문2</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://www.seouledc.or.kr/ko" target="_blank" class="tour-link">서울에너지드림센터</a><br>
+                        <span class="sq"></span>프로그램: 선유도에코투어<br>
+                        <span class="sq"></span>위치: 서울 마포구 증산로 14<br>
+                        <span class="sq"></span>투어시간: 10:00~12:00<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[코스]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) 서울에너지드림센터 탄소중립체험관 20분</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(전기버스 이동 20분)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) 선유도공원, 이야기관 30분</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(전기버스 이동 20분)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">3) 서울에너지드림센터 제로에너지빌딩 설명 10분</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [수] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">중식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 13:00-14:00 | 이동(40분) -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 7;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 중식장소→새활용플라자 (40분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 14:00-16:00 | 기관방문3: 새활용플라자 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 8 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">기관방문3</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://www.seoulup.or.kr/introduce.do?type=Business" target="_blank" class="tour-link">새활용플라자</a><br>
+                        <span class="sq"></span>프로그램: 새활용 투어/체험<br>
+                        <span class="sq"></span>위치: 서울 성동구 자동차시장길 49<br>
+                        <span class="sq"></span>투어시간: 14:00~16:00<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[코스]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) 도슨트 탐방 50분 - 제로웨이스트, 새활용</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(휴식시간 10분)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) 테마교육 50분 (우유팩 카드지갑 만들기)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [수] 16:00-18:00 | 자유 관람: 성수동 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 10 / 12;">
+                <div class="agenda-slot">
+                    <span class="badge badge-culture" style="font-size:14px;">문화체험</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>성수동 문화체험</span>
+                </div>
+            </div>
+
+            <!-- [수] 18:00-19:00 | 이동: 성수동 → 석식장소 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 성수동→석식장소 (20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 19:00 ~ | 환송만찬 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">환송만찬</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 목요일 26일 (Col 5)
+                 ============================================================ -->
+
+            <!-- [목] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>입국</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 03:50</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 2</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 공항→호텔</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5; margin-bottom:6px;"><span class="sq"></span>호텔 내 사우나 이용</span>
+                    <span class="badge badge-meal" style="font-size:14px;">풀만호텔조식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [목] 09:00-10:00 | 호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span class="badge badge-checkout" style="font-size:14px;">풀만 체크아웃</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [목] 10:00-12:00 | AKTD 1부 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">AKTD 1부</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>국제행사: ASEAN-Korea Think Tank Dialogue 2026 Conference<br>
+                        <span class="sq"></span>위치: 엠버시더 서울 풀만 19층 남산룸
+                    </span>
+                </div>
+            </div>
+
+            <!-- [목] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal">중식</span>
+                    <span class="badge badge-alert">설문조사</span>
+                </div>
+            </div>
+
+            <!-- [목] 13:00-16:00 | AKTD 2부 / 기관방문4 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 7 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">AKTD 2부</span>
+                    <hr style="border:0; border-top:1px solid #cbd5e1; margin:12px 0;">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 호텔→KTR (50분), 1시 출발</span>
+                    <span class="badge badge-visit" style="font-size:14px; margin-top:8px;">기관방문4</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: KTR 과천<br>
+                        <span class="sq"></span>위치: 경기 과천시 교육원로 98<br>
+                        <span class="sq"></span>방문시간: 2시 30분~ 4시 30분<br>
+                        <span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 4
+                    </span>
+                </div>
+            </div>
+
+            <!-- [목] 16:00-17:00 | KTR 복귀 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 10;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: KTR →광명역→호텔</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>출발시간: 4시30분</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>광명역하차: BRIN 4<br><span style="color:#64748b;">(KTX 광명-오송 17:18-17:45)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>호텔하차: MOI 3 · KTR 1 · BSN 3<br><span style="color:#64748b;">(이후 자유 일정)</span></span>
+                </div>
+            </div>
+
+            <!-- [목] 17:00-19:00 ~ | 호텔 체크인 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 11 / 14;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">세종 체크인</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://naver.me/FfeOVOZm" target="_blank">코트야드 바이 메리어트 세종</a>(1박)<br>
+                        <span class="sq"></span>위치: 세종 다솜3로 6<br>
+                        <span class="sq"></span>인원: BRIN 4
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 금요일 27일 (Col 6)
+                 ============================================================ -->
+
+            <!-- [금] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 2;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge badge-meal" style="font-size:14px;">풀만호텔조식</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-meal" style="font-size:14px;">메리어트세종조식</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 09:00-10:00 | 풀만호텔 체크아웃 / 메리어트세종호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 3;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge badge-checkout" style="font-size:14px;">풀만 체크아웃</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>버스이동: 호텔→공항 (1시간30분)</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-checkout" style="font-size:14px;">세종 체크아웃</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 10:00-12:00 | (비움) -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 4 / 6;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot"></div>
+                    <div class="agenda-slot"></div>
+                </div>
+            </div>
+
+            <!-- [금] 12:00-20:00 | 출국 / 세종일정 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 6 / 14;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>출국</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-culture" style="font-size:14px;">세종일정</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 20:00 | KTX -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 14;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>KTX이동: 오송-서울 20:32-21:24</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [금] 21:30 | 서울역 → 호텔 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 15;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 서울역→호텔 (20분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [금] 22:00 | 풀만호텔 체크인 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 16;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">풀만 체크인</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>장소: <a href="https://naver.me/5MVzZ9gW" target="_blank">앰배서더 서울 풀만 호텔</a><br>
+                        <span class="sq"></span>위치: 서울 중구 동호로 287<br>
+                        <span class="sq"></span>인원: BRIN 4
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 토요일 28일 (Col 7)
+                 ============================================================ -->
+
+            <!-- [토] 08:00-09:00 | 풀만호텔조식 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">풀만호텔조식</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [토] 09:00-12:00 | 풀만호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 3 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-checkout" style="font-size:14px;">풀만 체크아웃</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 호텔→공항 (1시간30분)</span>
+                </div>
+            </div>
+
+            <!-- [토] 12:00-19:00 ~ | 출국 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 6 / 14;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>출국</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- 20:00 / 21:30 / 22:00 공란 (월~목, 토) -->
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 16;"></div>
+
+        </div>
+    </div>
+    </div>
+
+    <div id="panel-en" class="lang-panel is-active">
+    <div class="table-wrap" id="table-wrap-en">
+        <div class="schedule-grid">
+
+            <!--
+            ============================================================
+            [시간 행 가이드]  grid-row 번호 = 아래 시간대
+            ------------------------------------------------------------
+              grid-row: 1  = 헤더 (요일)
+              grid-row: 2  = 08:00 - 09:00
+              grid-row: 3  = 09:00 - 10:00
+              grid-row: 4  = 10:00 - 11:00
+              grid-row: 5  = 11:00 - 12:00
+              grid-row: 6  = 12:00 - 13:00
+              grid-row: 7  = 13:00 - 14:00
+              grid-row: 8  = 14:00 - 15:00
+              grid-row: 9  = 15:00 - 16:00
+              grid-row: 10 = 16:00 - 17:00
+              grid-row: 11 = 17:00 - 18:00
+              grid-row: 12 = 18:00 - 19:00
+              grid-row: 13 = 19:00 ~
+              grid-row: 14 = 20:00
+              grid-row: 15 = 21:30
+              grid-row: 16 = 22:00
+            ------------------------------------------------------------
+            [요일 열 가이드]  grid-column 번호
+              Col 1 = 시간 / Col 2 = 월 / Col 3 = 화 / Col 4 = 수
+              Col 5 = 목 / Col 6 = 금 / Col 7 = 토
+            ------------------------------------------------------------
+            여러 시간대에 걸칠 때: grid-row: 시작 / 끝+1
+              예) 14:00~16:00 → style="grid-row: 8 / 10;"
+            ※ 대상자: 각 일정 칸 안 상단에 <span class="participants"> 사용
+            ============================================================
+            -->
+
+            <!-- ==================== 헤더 (Row 1) ==================== -->
+            <div class="grid-header" style="grid-column: 1; grid-row: 1;">Time</div>
+            <div class="grid-header" style="grid-column: 2; grid-row: 1;">Mon 23</div>
+            <div class="grid-header" style="grid-column: 3; grid-row: 1;">Tue 24</div>
+            <div class="grid-header" style="grid-column: 4; grid-row: 1;">Wed 25</div>
+            <div class="grid-header" style="grid-column: 5; grid-row: 1;">Thu 26</div>
+            <div class="grid-header" style="grid-column: 6; grid-row: 1;">Fri 27</div>
+            <div class="grid-header" style="grid-column: 7; grid-row: 1;">Sat 28</div>
+
+            <!-- ==================== 시간 컬럼 (Col 1) | 08:00 ~ 19:00 ==================== -->
+            <div class="grid-time" style="grid-column: 1; grid-row: 2;"><span class="time-start">08:00</span><span class="time-sep">~</span><span class="time-end">09:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 3;"><span class="time-start">09:00</span><span class="time-sep">~</span><span class="time-end">10:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 4;"><span class="time-start">10:00</span><span class="time-sep">~</span><span class="time-end">11:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 5;"><span class="time-start">11:00</span><span class="time-sep">~</span><span class="time-end">12:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 6;"><span class="time-start">12:00</span><span class="time-sep">~</span><span class="time-end">13:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 7;"><span class="time-start">13:00</span><span class="time-sep">~</span><span class="time-end">14:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 8;"><span class="time-start">14:00</span><span class="time-sep">~</span><span class="time-end">15:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 9;"><span class="time-start">15:00</span><span class="time-sep">~</span><span class="time-end">16:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 10;"><span class="time-start">16:00</span><span class="time-sep">~</span><span class="time-end">17:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 11;"><span class="time-start">17:00</span><span class="time-sep">~</span><span class="time-end">18:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 12;"><span class="time-start">18:00</span><span class="time-sep">~</span><span class="time-end">19:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 13;"><span class="time-start">19:00</span><span class="time-sep">~</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 14;"><span class="time-start">20:00</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 15;"><span class="time-start">21:30</span></div>
+            <div class="grid-time" style="grid-column: 1; grid-row: 16;"><span class="time-start">22:00</span></div>
+
+
+            <!-- ============================================================
+                 월요일 23일 (Col 2)
+                 ============================================================ -->
+
+            <!-- [월] 08:00-09:00 | 입국절차 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 06:50 or 07:50</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 09:00-11:00 | 인천공항 사우나/기도 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 3 / 5;">
+                <div class="agenda-slot">
+                    <span class="agenda-title" style="font-size: 14px; margin-bottom: 2px; color:#000;"><span class="sq"></span>Sauna/prayer time at Incheon Airport</span>
+                </div>
+            </div>
+
+            <!-- [월] 11:00-12:00 | 이동: 인천공항 → 중식장소 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 5;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Incheon Airport → lunch venue (30 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 12:00-13:00 | 중식 (괭이부리마을) -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Lunch</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 13:00-14:00 | 이동: 중식장소 → 수도권매립지관리공사 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 7;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Lunch venue → Sudokwon Landfill Site Management Corporation (20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 14:00-16:00 | 기관방문1: 수도권매립지관리공사 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 8 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">Institutional visit 1</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://www.slc.or.kr/slc/csc/ser/slExcur/slExcur00.do#/eyJ3ZWJQYWdlTm8iOiI0MTciLCJ0YWJObyI6MH0=" target="_blank" class="tour-link">Sudokwon Landfill Site Management Corporation</a><br>
+                        <span class="sq"></span>Program: Site tour<br>
+                        <span class="sq"></span>Location: 170 Jaweonsunhwan-ro, Geomdan-gu, Incheon<br>
+                        <span class="sq"></span>Tour time: 14:00~15:30<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2<br>
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[Course]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) SLC exhibition hall, 20 min</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) On-site briefing, 60–80 min</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Landfill Site 1</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Leachate treatment facility</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">50 MW power generation facility</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Landfill Site 2</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Landfill Site 3</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Resource circulation energy town</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Integrated weighing station</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">Seedling greenhouse</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [월] 16:00-17:00 | 이동: 수도권매립지관리공사 → 호텔 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 10;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Sudokwon Landfill Site Management Corporation → hotel (1 hr 20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [월] 17:00-18:00 | 호텔 체크인 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 11;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">Pullman Check-in</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://naver.me/5MVzZ9gW" target="_blank">Ambassador Seoul Pullman Hotel</a><br>
+                        <span class="sq"></span>Location: 287 Dongho-ro, Jung-gu, Seoul<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                </div>
+            </div>
+
+            <!-- [월] 18:00-19:00 | 이동: 호텔 → 석식장소 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Hotel → dinner venue (10 min)</span>
+                </div>
+            </div>
+
+            <!-- [월] 19:00 ~ | 환영만찬 -->
+            <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Welcome dinner</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 화요일 24일 (Col 3)
+                 ============================================================ -->
+
+            <!-- [화] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Pullman hotel breakfast</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 09:00-10:00 | 이동 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Hotel → Korea Productivity Center (20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 10:00-12:00 | 순환경제 워크숍 (오전) -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">Circular Economy Workshop</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://naver.me/GkRvOMrP" target="_blank">Korea Productivity Center</a><br>
+                        <span class="sq"></span>Location: 4F, 32 Saemunan-ro 5ga-gil, Jongno-gu, Seoul<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[Agenda]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:30~09:40</span>
+                            <span class="ws-line-body">Opening remarks</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:40~09:55</span>
+                            <span class="ws-line-body">Welcome address and certifying body introduction</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">09:55~10:50</span>
+                            <span class="ws-line-body">Korea's circular economy policy and legal framework</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time break">10:50~11:00</span>
+                            <span class="ws-line-body">Break</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">11:00~11:55</span>
+                            <span class="ws-line-body">Circular economy industry trends and corporate responses</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [화] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Lunch</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 13:00-16:00 | 순환경제 워크숍 (오후) -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 7 / 10;">
+                <div class="agenda-slot">
+                    <span class="agenda-detail section-label" style="margin-top: 0; font-size: 14px;">
+                        <b>[Agenda]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line">
+                            <span class="ws-line-time">13:30~14:25</span>
+                            <span class="ws-line-body">Introduction to circular economy testing and certification</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time break">14:25~14:35</span>
+                            <span class="ws-line-body">Break</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">14:35~15:30</span>
+                            <span class="ws-line-body">Resource efficiency management verification (REMS)</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">15:30~15:50</span>
+                            <span class="ws-line-body">Q&A session</span>
+                        </div>
+                        <div class="ws-line">
+                            <span class="ws-line-time">15:50~16:00</span>
+                            <span class="ws-line-body">Closing</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [화] 16:00-18:00 | 문화체험 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 10 / 12;">
+                <div class="agenda-slot">
+                    <span class="badge badge-culture" style="font-size:14px;">Cultural experience</span>
+                </div>
+            </div>
+
+            <!-- [화] 18:00-19:00 | 이동: 광화문 → 석식장소 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Gwanghwamun → dinner venue (20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [화] 19:00 ~ | 석식 -->
+            <div class="grid-cell" style="grid-column: 3; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Dinner</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 수요일 25일 (Col 4)
+                 ============================================================ -->
+
+            <!-- [수] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Pullman hotel breakfast</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 09:00-10:00 | 이동(30분) -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Hotel → Seoul Energy Dream Center (30 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 10:00-12:00 | 기관방문2: 서울에너지드림센터 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">Institutional visit 2</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://www.seouledc.or.kr/ko" target="_blank" class="tour-link">Seoul Energy Dream Center</a><br>
+                        <span class="sq"></span>Program: Seonyudo Eco Tour<br>
+                        <span class="sq"></span>Location: 14 Jeungsan-ro, Mapo-gu, Seoul<br>
+                        <span class="sq"></span>Tour time: 10:00~12:00<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[Course]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) Seoul Energy Dream Center carbon-neutral experience hall, 20 min</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(Electric bus transfer, 20 min)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) Seonyudo Park, Story Hall, 30 min</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(Electric bus transfer, 20 min)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">3) Seoul Energy Dream Center zero-energy building briefing, 10 min</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [수] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Lunch</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 13:00-14:00 | 이동(40분) -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 7;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Lunch venue → Seoul Upcycling Plaza (40 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 14:00-16:00 | 기관방문3: 새활용플라자 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 8 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">Institutional visit 3</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://www.seoulup.or.kr/introduce.do?type=Business" target="_blank" class="tour-link">Seoul Upcycling Plaza</a><br>
+                        <span class="sq"></span>Program: Upcycling tour/experience<br>
+                        <span class="sq"></span>Location: 49 Jadongchasijang-gil, Seongdong-gu, Seoul<br>
+                        <span class="sq"></span>Tour time: 14:00~16:00<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2
+                    </span>
+                    <span class="agenda-detail section-label" style="margin-top: 10px; font-size: 14px;">
+                        <b>[Course]</b>
+                    </span>
+                    <div class="ws-flow compact">
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">1) Docent tour, 50 min — zero waste, upcycling</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">(Break, 10 min)</span>
+                        </div>
+                        <div class="ws-line" style="grid-template-columns: 1fr;">
+                            <span class="ws-line-body">2) Themed workshop, 50 min (make a card wallet from milk cartons)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [수] 16:00-18:00 | 자유 관람: 성수동 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 10 / 12;">
+                <div class="agenda-slot">
+                    <span class="badge badge-culture" style="font-size:14px;">Cultural experience</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Seongsu-dong cultural experience</span>
+                </div>
+            </div>
+
+            <!-- [수] 18:00-19:00 | 이동: 성수동 → 석식장소 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 12;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Seongsu-dong → dinner venue (20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [수] 19:00 ~ | 환송만찬 -->
+            <div class="grid-cell" style="grid-column: 4; grid-row: 13;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Farewell dinner</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 목요일 26일 (Col 5)
+                 ============================================================ -->
+
+            <!-- [목] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 03:50</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 2</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Airport → hotel</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5; margin-bottom:6px;"><span class="sq"></span>Sauna use at hotel</span>
+                    <span class="badge badge-meal" style="font-size:14px;">Pullman hotel breakfast</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [목] 09:00-10:00 | 호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 3;">
+                <div class="agenda-slot">
+                    <span class="badge badge-checkout" style="font-size:14px;">Pullman Check-out</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 2</span>
+                </div>
+            </div>
+
+            <!-- [목] 10:00-12:00 | AKTD 1부 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 4 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">AKTD Part 1</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>International event: ASEAN-Korea Think Tank Dialogue 2026 Conference<br>
+                        <span class="sq"></span>Location: Ambassador Seoul Pullman, 19F Namsan Room
+                    </span>
+                </div>
+            </div>
+
+            <!-- [목] 12:00-13:00 | 중식 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal">Lunch</span>
+                    <span class="badge badge-alert">Survey</span>
+                </div>
+            </div>
+
+            <!-- [목] 13:00-16:00 | AKTD 2부 / 기관방문4 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 7 / 10;">
+                <div class="agenda-slot">
+                    <span class="badge badge-visit" style="font-size:14px;">AKTD Part 2</span>
+                    <hr style="border:0; border-top:1px solid #cbd5e1; margin:12px 0;">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Hotel → KTR (50 min), depart 1:00 PM</span>
+                    <span class="badge badge-visit" style="font-size:14px; margin-top:8px;">Institutional visit 4</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: KTR Gwacheon<br>
+                        <span class="sq"></span>Location: 98 Gyoyukwon-ro, Gwacheon-si, Gyeonggi-do<br>
+                        <span class="sq"></span>Visit time: 2:30 PM–4:30 PM<br>
+                        <span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 4
+                    </span>
+                </div>
+            </div>
+
+            <!-- [목] 16:00-17:00 | KTR 복귀 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 10;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: KTR → Gwangmyeong Station → hotel</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Departure time: 4:30 PM</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Drop-off at Gwangmyeong Station: BRIN 4<br><span style="color:#64748b;">(KTX Gwangmyeong–Osong 17:18–17:45)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Drop-off at hotel: MOI 3 · KTR 1 · BSN 3<br><span style="color:#64748b;">(Free time afterward)</span></span>
+                </div>
+            </div>
+
+            <!-- [목] 17:00-19:00 ~ | 호텔 체크인 -->
+            <div class="grid-cell" style="grid-column: 5; grid-row: 11 / 14;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">Sejong Check-in</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://naver.me/FfeOVOZm" target="_blank">Courtyard by Marriott Sejong</a> (1 night)<br>
+                        <span class="sq"></span>Location: 6 Dasom 3-ro, Sejong<br>
+                        <span class="sq"></span>Participants: BRIN 4
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 금요일 27일 (Col 6)
+                 ============================================================ -->
+
+            <!-- [금] 08:00-09:00 | 조식 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 2;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge badge-meal" style="font-size:14px;">Pullman hotel breakfast</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-meal" style="font-size:14px;">Marriott Sejong breakfast</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 09:00-10:00 | 풀만호텔 체크아웃 / 메리어트세종호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 3;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge badge-checkout" style="font-size:14px;">Pullman Check-out</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Bus transfer: Hotel → airport (1 hr 30 min)</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-checkout" style="font-size:14px;">Sejong Check-out</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 10:00-12:00 | (비움) -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 4 / 6;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot"></div>
+                    <div class="agenda-slot"></div>
+                </div>
+            </div>
+
+            <!-- [금] 12:00-20:00 | 출국 / 세종일정 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 6 / 14;">
+                <div class="agenda-split split-vline">
+                    <div class="agenda-slot">
+                        <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Departure</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3</span>
+                    </div>
+                    <div class="agenda-slot">
+                        <span class="badge badge-culture" style="font-size:14px;">Sejong schedule</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- [금] 20:00 | KTX -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 14;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>KTX transfer: Osong–Seoul 20:32–21:24</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [금] 21:30 | 서울역 → 호텔 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 15;">
+                <div class="agenda-slot">
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Seoul Station → hotel (20 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [금] 22:00 | 풀만호텔 체크인 -->
+            <div class="grid-cell" style="grid-column: 6; grid-row: 16;">
+                <div class="agenda-slot">
+                    <span class="badge badge-hotel" style="font-size:14px;">Pullman Check-in</span>
+                    <span class="agenda-detail" style="font-size: 14px; color:#000;">
+                        <span class="sq"></span>Venue: <a href="https://naver.me/5MVzZ9gW" target="_blank">Ambassador Seoul Pullman Hotel</a><br>
+                        <span class="sq"></span>Location: 287 Dongho-ro, Jung-gu, Seoul<br>
+                        <span class="sq"></span>Participants: BRIN 4
+                    </span>
+                </div>
+            </div>
+
+
+            <!-- ============================================================
+                 토요일 28일 (Col 7)
+                 ============================================================ -->
+
+            <!-- [토] 08:00-09:00 | 풀만호텔조식 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 2;">
+                <div class="agenda-slot">
+                    <span class="badge badge-meal" style="font-size:14px;">Pullman hotel breakfast</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- [토] 09:00-12:00 | 풀만호텔 체크아웃 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 3 / 6;">
+                <div class="agenda-slot">
+                    <span class="badge badge-checkout" style="font-size:14px;">Pullman Check-out</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Hotel → airport (1 hr 30 min)</span>
+                </div>
+            </div>
+
+            <!-- [토] 12:00-19:00 ~ | 출국 -->
+            <div class="grid-cell" style="grid-column: 7; grid-row: 6 / 14;">
+                <div class="agenda-slot">
+                    <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Departure</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                </div>
+            </div>
+
+            <!-- 20:00 / 21:30 / 22:00 empty (Mon–Thu, Sat) -->
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 2; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 3; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 4; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 5; grid-row: 16;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 14;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 15;"></div>
+            <div class="grid-cell empty" style="grid-column: 7; grid-row: 16;"></div>
+
+        </div>
+    </div>
+    </div>
+
+    </div>
+
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
+<script>
+(function () {
+  var title = document.getElementById('page-title');
+  var excelBtn = document.getElementById('btn-excel');
+  var panelKo = document.getElementById('panel-ko');
+  var panelEn = document.getElementById('panel-en');
+  var btnEn = document.getElementById('btn-lang-en');
+  var btnKo = document.getElementById('btn-lang-ko');
+  var helperNote = document.getElementById('nav-helper-note');
+  var currentLang = 'ko';
+  var meta = {
+    ko: {
+      title: '(tentative) 순환경제 참석자 일정표',
+      helper: '인터넷 환경에서 확인가능(인터넷이 안될 경우 상단 엑셀 or PDF로 미리 추출필요)'
+    },
+    en: {
+      title: '(tentative) Circular Economy Participants Schedule',
+      helper: 'Available online (If offline, export via Excel or PDF above in advance)'
+    }
+  };
+
+  function getActiveWrap() {
+    return currentLang === 'en'
+      ? document.getElementById('table-wrap-en')
+      : document.getElementById('table-wrap');
+  }
+
+  function getActiveGrid() {
+    var wrap = getActiveWrap();
+    return wrap ? wrap.querySelector('.schedule-grid') : null;
+  }
+
+  function setLang(lang) {
+    currentLang = (lang === 'en') ? 'en' : 'ko';
+    if (panelKo) panelKo.classList.toggle('is-active', currentLang === 'ko');
+    if (panelEn) panelEn.classList.toggle('is-active', currentLang === 'en');
+    if (btnKo) btnKo.classList.toggle('is-active', currentLang === 'ko');
+    if (btnEn) btnEn.classList.toggle('is-active', currentLang === 'en');
+    if (title && meta[currentLang]) title.textContent = meta[currentLang].title;
+    if (helperNote && meta[currentLang]) helperNote.textContent = meta[currentLang].helper;
+    document.documentElement.lang = currentLang === 'en' ? 'en' : 'ko';
+    try { history.replaceState(null, '', '#' + currentLang); } catch (e) {}
+    window.scrollTo(0, 0);
+    // refresh top scroll width for active grid
+    var topInner = document.getElementById('table-scroll-top-inner');
+    var grid = getActiveGrid();
+    if (topInner && grid) topInner.style.width = grid.scrollWidth + 'px';
+  }
+
+  if (btnEn) btnEn.addEventListener('click', function () { setLang('en'); });
+  if (btnKo) btnKo.addEventListener('click', function () { setLang('ko'); });
+
+  var hash = (location.hash || '').replace('#', '');
+  setLang(hash === 'ko' ? 'ko' : 'en');
+
+  /* 상단·하단 가로 스크롤 동기화 */
+  (function syncTableScroll() {
+    var topBar = document.getElementById('table-scroll-top');
+    var topInner = document.getElementById('table-scroll-top-inner');
+    function activeWrap() {
+      return (typeof getActiveWrap === 'function' && getActiveWrap()) || document.getElementById('table-wrap');
+    }
+    function activeGrid() {
+      var w = activeWrap();
+      return w && w.querySelector('.schedule-grid');
+    }
+    if (!topBar || !topInner || !activeWrap() || !activeGrid()) return;
+
+    var syncing = false;
+    function syncWidth() {
+      var grid = activeGrid();
+      if (grid) topInner.style.width = grid.scrollWidth + 'px';
+    }
+    function onTopScroll() {
+      var wrap = activeWrap();
+      if (syncing || !wrap) return;
+      syncing = true;
+      wrap.scrollLeft = topBar.scrollLeft;
+      syncing = false;
+    }
+    function onWrapScroll(e) {
+      if (syncing) return;
+      syncing = true;
+      topBar.scrollLeft = e.target.scrollLeft;
+      syncing = false;
+    }
+    topBar.addEventListener('scroll', onTopScroll, { passive: true });
+    var wrapKo = document.getElementById('table-wrap');
+    var wrapEn = document.getElementById('table-wrap-en');
+    if (wrapKo) wrapKo.addEventListener('scroll', onWrapScroll, { passive: true });
+    if (wrapEn) wrapEn.addEventListener('scroll', onWrapScroll, { passive: true });
+    syncWidth();
+    window.addEventListener('resize', syncWidth);
+    if (typeof ResizeObserver === 'function') {
+      var ro = new ResizeObserver(syncWidth);
+      var gKo = document.querySelector('#table-wrap .schedule-grid');
+      var gEn = document.querySelector('#table-wrap-en .schedule-grid');
+      if (gKo) ro.observe(gKo);
+      if (gEn) ro.observe(gEn);
+    }
+  })();
+
+  var printBtn = document.getElementById('btn-print');
+  var bodyEl = document.body;
+
+  function excelCellText(el) {
+    if (!el) return '';
+    var clone = el.cloneNode(true);
+    clone.querySelectorAll('br').forEach(function (br) {
+      br.replaceWith(document.createTextNode('\n'));
+    });
+    clone.querySelectorAll('div, p, li, tr, h1, h2, h3, h4, section, article').forEach(function (block) {
+      block.insertAdjacentText('beforebegin', '\n');
+      block.insertAdjacentText('afterend', '\n');
+    });
+    return (clone.textContent || '')
+      .replace(/\u00a0/g, ' ')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n[ \t]+/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+  }
+
+  function excelStyle(base) {
+    return Object.assign({
+      alignment: { wrapText: true, vertical: 'top', horizontal: 'left' },
+      font: { name: '맑은 고딕', sz: 10, color: { rgb: '17304B' } }
+    }, base || {});
+  }
+
+  function tableToMatrix(table) {
+    var rows = Array.prototype.slice.call(table.querySelectorAll('tr'));
+    var raw = [];
+    var occupied = {};
+    var origins = []; // { r, c, rs, cs, text }
+
+    rows.forEach(function (tr, r) {
+      if (!raw[r]) raw[r] = [];
+      var c = 0;
+      Array.prototype.forEach.call(tr.children, function (cell) {
+        if (cell.tagName !== 'TH' && cell.tagName !== 'TD') return;
+        while (occupied[r + ',' + c]) c += 1;
+        var rs = parseInt(cell.getAttribute('rowspan') || '1', 10) || 1;
+        var cs = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+        var text = excelCellText(cell);
+        origins.push({ r: r, c: c, rs: rs, cs: cs, text: text });
+        for (var rr = 0; rr < rs; rr += 1) {
+          for (var cc = 0; cc < cs; cc += 1) {
+            var keyR = r + rr;
+            var keyC = c + cc;
+            if (!raw[keyR]) raw[keyR] = [];
+            // 값은 시작 칸만. rowspan(세로)만 있는 칸은 각 행에 복제
+            if (cc === 0 && (cs === 1 || rr === 0)) raw[keyR][keyC] = text;
+            else if (raw[keyR][keyC] == null) raw[keyR][keyC] = '';
+            if (rr || cc) occupied[keyR + ',' + keyC] = true;
+          }
+        }
+        c += cs;
+      });
+    });
+
+    var width = 0;
+    raw.forEach(function (row) {
+      if (row && row.length > width) width = row.length;
+    });
+
+    // 헤더 colspan으로 생기는 여분 열(이름×2, 연락처×4 등) 제거
+    var dropCol = {};
+    origins.forEach(function (o) {
+      if (o.r !== 0 || o.cs <= 1) return;
+      for (var cc = 1; cc < o.cs; cc += 1) dropCol[o.c + cc] = true;
+    });
+    var keepCols = [];
+    for (var i = 0; i < width; i += 1) {
+      if (!dropCol[i]) keepCols.push(i);
+    }
+    var colMap = {};
+    keepCols.forEach(function (oldC, newC) { colMap[oldC] = newC; });
+
+    var matrix = raw.map(function (row) {
+      return keepCols.map(function (oldC) {
+        return row && row[oldC] != null ? row[oldC] : '';
+      });
+    });
+
+    // 세로 rowspan만 병합 (가로 colspan은 열 축소로 이미 1칸)
+    var merges = [];
+    origins.forEach(function (o) {
+      if (o.rs <= 1) return;
+      if (colMap[o.c] == null) return;
+      var nc = colMap[o.c];
+      merges.push({ s: { r: o.r, c: nc }, e: { r: o.r + o.rs - 1, c: nc } });
+      // 병합 시 아래 행 중복 값 제거
+      for (var rr = 1; rr < o.rs; rr += 1) {
+        if (matrix[o.r + rr]) matrix[o.r + rr][nc] = '';
+      }
+      matrix[o.r][nc] = o.text;
+    });
+
+    return { matrix: matrix, merges: merges };
+  }
+
+  function exportPersonnelExcel() {
+    if (typeof ExcelJS === 'undefined') {
+      alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결 후 다시 시도해 주세요.');
+      return;
+    }
+    var view = document.getElementById('view-personnel');
+    if (!view) {
+      alert('인원관리 화면을 찾지 못했습니다.');
+      return;
+    }
+
+    var prevLabel = excelBtn ? excelBtn.textContent : '';
+    if (excelBtn) {
+      excelBtn.disabled = true;
+      excelBtn.textContent = '엑셀 준비 중…';
+    }
+
+    var border = {
+      top: { style: 'thin', color: { argb: 'FFCDDDEB' } },
+      bottom: { style: 'thin', color: { argb: 'FFCDDDEB' } },
+      left: { style: 'thin', color: { argb: 'FFCDDDEB' } },
+      right: { style: 'thin', color: { argb: 'FFCDDDEB' } }
+    };
+
+    function applyDomFont(excelCell, domEl) {
+      if (!domEl) return;
+      var cs = window.getComputedStyle(domEl);
+      var hex = rgbToHexColor(cs.color) || '#17304B';
+      var fw = cs.fontWeight;
+      excelCell.font = {
+        name: '맑은 고딕',
+        size: 10,
+        bold: fw === 'bold' || fw === '700' || parseInt(fw, 10) >= 600,
+        color: { argb: 'FF' + hex.replace('#', '') }
+      };
+    }
+
+    try {
+      var wb = new ExcelJS.Workbook();
+      var ws = wb.addWorksheet('참여자', { views: [{ showGridLines: false }] });
+      var COLS = 10;
+      var colWidths = [5, 16, 18, 22, 18, 22, 12, 12, 14, 10];
+      colWidths.forEach(function (w, i) { ws.getColumn(i + 1).width = w; });
+
+      var rowIdx = 1;
+
+      function styleRangeBorder(r1, c1, r2, c2) {
+        for (var rr = r1; rr <= r2; rr += 1) {
+          for (var cc = c1; cc <= c2; cc += 1) {
+            ws.getCell(rr, cc).border = border;
+          }
+        }
+      }
+
+      // 제목
+      ws.mergeCells(rowIdx, 1, rowIdx, COLS);
+      var title = ws.getCell(rowIdx, 1);
+      title.value = '참여자';
+      title.font = { name: '맑은 고딕', size: 18, bold: true, color: { argb: 'FF17304B' } };
+      title.alignment = { vertical: 'middle', horizontal: 'left' };
+      ws.getRow(rowIdx).height = 28;
+      rowIdx += 2;
+
+      // 연락처 카드
+      var cards = view.querySelectorAll('.contacts-row .contact-card');
+      if (cards.length) {
+        ws.mergeCells(rowIdx, 1, rowIdx, COLS);
+        var contactHead = ws.getCell(rowIdx, 1);
+        contactHead.value = '담당 연락처';
+        contactHead.font = { name: '맑은 고딕', size: 13, bold: true, color: { argb: 'FF087DB8' } };
+        ws.getRow(rowIdx).height = 22;
+        rowIdx += 1;
+
+        Array.prototype.forEach.call(cards, function (card) {
+          var label = excelCellText(card.querySelector('.contact-card-label'));
+          var people = Array.prototype.map.call(
+            card.querySelectorAll('.contact-card-person'),
+            function (p) { return excelCellText(p); }
+          ).filter(Boolean);
+
+          ws.getCell(rowIdx, 1).value = label;
+          ws.getCell(rowIdx, 1).font = { name: '맑은 고딕', size: 10, bold: true, color: { argb: 'FF17304B' } };
+          ws.getCell(rowIdx, 1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF1F7FE' } };
+          ws.mergeCells(rowIdx, 1, rowIdx, 2);
+          var personText = people.join('  |  ');
+          ws.mergeCells(rowIdx, 3, rowIdx, COLS);
+          ws.getCell(rowIdx, 3).value = personText;
+          ws.getCell(rowIdx, 3).font = { name: '맑은 고딕', size: 10, color: { argb: 'FF17304B' } };
+          ws.getCell(rowIdx, 3).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+          styleRangeBorder(rowIdx, 1, rowIdx, COLS);
+          ws.getRow(rowIdx).height = Math.max(20, 16 + people.length * 4);
+          rowIdx += 1;
+        });
+        rowIdx += 1;
+      }
+
+      // 블록(표)들을 화면 순서대로 한 시트에 나열
+      var blocks = view.querySelectorAll('.block');
+      Array.prototype.forEach.call(blocks, function (block) {
+        var table = block.querySelector('table.people-table');
+        if (!table) return;
+
+        var titleText = excelCellText(block.querySelector('.block-title'));
+        var subText = excelCellText(block.querySelector('.block-sub'));
+
+        ws.mergeCells(rowIdx, 1, rowIdx, COLS);
+        var bt = ws.getCell(rowIdx, 1);
+        bt.value = titleText;
+        bt.font = { name: '맑은 고딕', size: 13, bold: true, color: { argb: 'FF17304B' } };
+        bt.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F4FC' } };
+        bt.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+        styleRangeBorder(rowIdx, 1, rowIdx, COLS);
+        ws.getRow(rowIdx).height = 24;
+        rowIdx += 1;
+
+        if (subText) {
+          ws.mergeCells(rowIdx, 1, rowIdx, COLS);
+          var st = ws.getCell(rowIdx, 1);
+          st.value = subText;
+          st.font = { name: '맑은 고딕', size: 10, color: { argb: 'FF58708A' } };
+          st.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+          ws.getRow(rowIdx).height = 20;
+          rowIdx += 1;
+        }
+
+        var parsed = tableToMatrix(table);
+        var matrix = parsed.matrix;
+        var merges = parsed.merges || [];
+        if (!matrix.length) {
+          rowIdx += 1;
+          return;
+        }
+
+        // 원본 셀 참조(스타일용): 논리 좌표 → DOM
+        var domGrid = [];
+        var occupied = {};
+        var trs = table.querySelectorAll('tr');
+        Array.prototype.forEach.call(trs, function (tr, r) {
+          if (!domGrid[r]) domGrid[r] = [];
+          var c = 0;
+          Array.prototype.forEach.call(tr.children, function (cell) {
+            if (cell.tagName !== 'TH' && cell.tagName !== 'TD') return;
+            while (occupied[r + ',' + c]) c += 1;
+            var rs = parseInt(cell.getAttribute('rowspan') || '1', 10) || 1;
+            var cs = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+            domGrid[r][c] = cell;
+            for (var rr = 0; rr < rs; rr += 1) {
+              for (var cc = 0; cc < cs; cc += 1) {
+                if (rr || cc) occupied[(r + rr) + ',' + (c + cc)] = true;
+              }
+            }
+            c += cs;
+          });
+        });
+
+        // colspan 축소 매핑 (tableToMatrix와 동일)
+        var dropCol = {};
+        var headerOrigins = [];
+        occupied = {};
+        Array.prototype.forEach.call(trs[0] ? trs[0].children : [], function (cell) {
+          if (cell.tagName !== 'TH' && cell.tagName !== 'TD') return;
+        });
+        // keepCols from parsed matrix width
+        var width = matrix[0].length;
+        var tableStart = rowIdx;
+
+        matrix.forEach(function (row, r) {
+          var excelR = tableStart + r;
+          var isHeader = r === 0;
+          ws.getRow(excelR).height = isHeader ? 22 : Math.max(18, 14 + String(row.join('\n')).split('\n').length * 6);
+          for (var c = 0; c < width; c += 1) {
+            var excelC = c + 1;
+            var cell = ws.getCell(excelR, excelC);
+            var val = row[c] != null ? String(row[c]) : '';
+            cell.value = val;
+            cell.border = border;
+            cell.alignment = { vertical: 'middle', horizontal: c === 0 ? 'center' : 'left', wrapText: true };
+            if (isHeader) {
+              cell.font = { name: '맑은 고딕', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+              cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF087DB8' } };
+              cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            } else {
+              cell.font = { name: '맑은 고딕', size: 10, color: { argb: 'FF17304B' } };
+              // 이름 등 화면 색 반영
+              var domCell = null;
+              // matrix col is already collapsed; approximate via scanning row cells
+            }
+          }
+          rowIdx += 1;
+        });
+
+        // DOM 스타일 재매칭: 축소된 헤더 기준으로 keepCols 재계산
+        var rawWidth = 0;
+        var rawOccupied = {};
+        var rawMap = []; // rawMap[r][rawC] = dom
+        Array.prototype.forEach.call(trs, function (tr, r) {
+          rawMap[r] = rawMap[r] || [];
+          var c = 0;
+          Array.prototype.forEach.call(tr.children, function (cell) {
+            if (cell.tagName !== 'TH' && cell.tagName !== 'TD') return;
+            while (rawOccupied[r + ',' + c]) c += 1;
+            var rs = parseInt(cell.getAttribute('rowspan') || '1', 10) || 1;
+            var cs = parseInt(cell.getAttribute('colspan') || '1', 10) || 1;
+            rawMap[r][c] = cell;
+            if (r === 0 && cs > 1) {
+              for (var cc = 1; cc < cs; cc += 1) dropCol[c + cc] = true;
+            }
+            for (var rr = 0; rr < rs; rr += 1) {
+              for (var cc2 = 0; cc2 < cs; cc2 += 1) {
+                if (rr || cc2) rawOccupied[(r + rr) + ',' + (c + cc2)] = true;
+              }
+            }
+            rawWidth = Math.max(rawWidth, c + cs);
+            c += cs;
+          });
+        });
+        var keepCols = [];
+        for (var k = 0; k < rawWidth; k += 1) if (!dropCol[k]) keepCols.push(k);
+
+        for (var mr = 0; mr < matrix.length; mr += 1) {
+          for (var mc = 0; mc < keepCols.length; mc += 1) {
+            var rawC = keepCols[mc];
+            var dom = rawMap[mr] && rawMap[mr][rawC];
+            if (!dom) continue;
+            var eCell = ws.getCell(tableStart + mr, mc + 1);
+            if (mr === 0) continue;
+            applyDomFont(eCell, dom);
+            if (dom.classList.contains('mark-o') || dom.classList.contains('mark-needed')) {
+              eCell.font = { name: '맑은 고딕', size: 10, bold: true, color: { argb: 'FFC026D3' } };
+              eCell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+            }
+            if (dom.classList.contains('na-bar')) {
+              eCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFEEF2F7' } };
+            }
+            var lines = String(eCell.value || '').split('\n').length;
+            if (lines > 1) {
+              ws.getRow(tableStart + mr).height = Math.max(ws.getRow(tableStart + mr).height || 18, 12 + lines * 12);
+            }
+          }
+        }
+
+        merges.forEach(function (m) {
+          var r1 = tableStart + m.s.r;
+          var c1 = m.s.c + 1;
+          var r2 = tableStart + m.e.r;
+          var c2 = m.e.c + 1;
+          if (r1 === r2 && c1 === c2) return;
+          try {
+            ws.mergeCells(r1, c1, r2, c2);
+            var merged = ws.getCell(r1, c1);
+            merged.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+            styleRangeBorder(r1, c1, r2, c2);
+          } catch (e) { /* ignore overlap */ }
+        });
+
+        rowIdx += 1; // 블록 간 간격
+      });
+
+      return wb.xlsx.writeBuffer().then(function (buffer) {
+        var stamp = new Date();
+        var y = stamp.getFullYear();
+        var m = String(stamp.getMonth() + 1).padStart(2, '0');
+        var d = String(stamp.getDate()).padStart(2, '0');
+        downloadArrayBuffer(buffer, '참여자_' + y + m + d + '.xlsx');
+      }).catch(function (err) {
+        console.error(err);
+        alert('엑셀 저장에 실패했습니다. 다시 시도해 주세요.');
+      }).then(function () {
+        if (excelBtn) {
+          excelBtn.disabled = false;
+          excelBtn.textContent = prevLabel || '엑셀 출력';
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      alert('엑셀 저장에 실패했습니다. 다시 시도해 주세요.');
+      if (excelBtn) {
+        excelBtn.disabled = false;
+        excelBtn.textContent = prevLabel || '엑셀 출력';
+      }
+    }
+  }
+
+  function parseGridSpan(styleText, prop) {
+    var re = new RegExp(prop + '\\s*:\\s*(\\d+)\\s*(?:/\\s*(\\d+))?');
+    var m = String(styleText || '').match(re);
+    if (!m) return null;
+    var start = parseInt(m[1], 10);
+    var end = m[2] ? parseInt(m[2], 10) : start + 1;
+    return { start: start, end: end };
+  }
+
+  function rgbToHexColor(rgb) {
+    if (!rgb) return '';
+    if (rgb.charAt(0) === '#') return rgb.toUpperCase();
+    var m = String(rgb).match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/i);
+    if (!m) return '';
+    return (
+      '#' +
+      [m[1], m[2], m[3]].map(function (n) {
+        var h = Number(n).toString(16);
+        return h.length < 2 ? '0' + h : h;
+      }).join('')
+    ).toUpperCase();
+  }
+
+  function fontFromComputed(el) {
+    var cs = window.getComputedStyle(el || document.body);
+    var hex = rgbToHexColor(cs.color) || '#17304B';
+    var fw = cs.fontWeight;
+    var szPx = parseFloat(cs.fontSize);
+    var szPt = isNaN(szPx) ? 10 : Math.min(12, Math.max(9, Math.round(szPx * 0.72)));
+    return {
+      name: '맑은 고딕',
+      size: szPt,
+      bold: fw === 'bold' || fw === '700' || parseInt(fw, 10) >= 600,
+      color: { argb: 'FF' + hex.replace('#', '') }
+    };
+  }
+
+  function scheduleCellRichText(el) {
+    if (!el || el.classList.contains('empty')) return [];
+    var runs = [];
+    function pushText(text, font) {
+      if (text == null || text === '') return;
+      var last = runs[runs.length - 1];
+      var key = JSON.stringify(font);
+      if (last && last._key === key) {
+        last.text += text;
+        return;
+      }
+      runs.push({ text: text, font: font, _key: key });
+    }
+    function ensureNewline() {
+      if (!runs.length) return;
+      if (/\n$/.test(runs[runs.length - 1].text)) return;
+      pushText('\n', runs[runs.length - 1].font);
+    }
+    function walkInline(node) {
+      if (!node) return;
+      if (node.nodeType === 3) {
+        var raw = String(node.nodeValue || '').replace(/\u00a0/g, ' ');
+        if (!raw) return;
+        // 태그 사이 공백/줄바꿈은 한 칸 공백으로만
+        if (!/\S/.test(raw)) {
+          if (runs.length && !/[\s\n]$/.test(runs[runs.length - 1].text)) {
+            pushText(' ', fontFromComputed(node.parentElement));
+          }
+          return;
+        }
+        pushText(raw.replace(/\s+/g, ' '), fontFromComputed(node.parentElement));
+        return;
+      }
+      if (node.nodeType !== 1) return;
+      var tag = node.tagName;
+      if (tag === 'SCRIPT' || tag === 'STYLE' || tag === 'SVG' || tag === 'BUTTON') return;
+      if (tag === 'BR') {
+        ensureNewline();
+        return;
+      }
+      Array.prototype.forEach.call(node.childNodes, walkInline);
+    }
+    function processLineEl(lineEl, isFirst) {
+      if (!isFirst) ensureNewline();
+      walkInline(lineEl);
+    }
+    function processSlot(slotEl) {
+      var kids = Array.prototype.slice.call(slotEl.children);
+      if (!kids.length) {
+        walkInline(slotEl);
+        return;
+      }
+      kids.forEach(function (kid, idx) {
+        if (kid.classList.contains('ws-flow')) {
+          var lines = kid.querySelectorAll('.ws-line');
+          if (lines.length) {
+            Array.prototype.forEach.call(lines, function (line, li) {
+              processLineEl(line, idx === 0 && li === 0 && !runs.length);
+            });
+            return;
+          }
+        }
+        if (kid.classList.contains('agenda-slot') || kid.classList.contains('agenda-split')) {
+          if (runs.length) ensureNewline();
+          processSlot(kid);
+          return;
+        }
+        processLineEl(kid, !runs.length && idx === 0);
+      });
+    }
+
+    var roots = [];
+    Array.prototype.forEach.call(el.children || [], function (ch) {
+      if (ch.classList && (ch.classList.contains('agenda-slot') || ch.classList.contains('agenda-split'))) {
+        roots.push(ch);
+      }
+    });
+    if (roots.length) {
+      roots.forEach(function (root, i) {
+        if (i) ensureNewline();
+        processSlot(root);
+      });
+    } else {
+      processSlot(el);
+    }
+
+    return runs
+      .map(function (r) { return { text: r.text, font: r.font }; })
+      .map(function (r, i, arr) {
+        var t = r.text;
+        if (i === 0) t = t.replace(/^\n+/, '');
+        if (i === arr.length - 1) t = t.replace(/\n+$/, '');
+        t = t.replace(/\n{3,}/g, '\n\n');
+        return { text: t, font: r.font };
+      })
+      .filter(function (r) { return r.text && r.text.length; });
+  }
+
+  function measureRichHeight(runs, widthPx) {
+    var probe = document.createElement('div');
+    probe.style.cssText = [
+      'position:absolute',
+      'left:-10000px',
+      'top:0',
+      'width:' + widthPx + 'px',
+      'box-sizing:border-box',
+      'padding:10px',
+      "font-family:'맑은 고딕', Malgun Gothic, sans-serif",
+      'font-size:11px',
+      'line-height:1.5',
+      'white-space:pre-wrap',
+      'word-break:keep-all'
+    ].join(';');
+    runs.forEach(function (run) {
+      var span = document.createElement('span');
+      span.style.fontFamily = '맑은 고딕';
+      span.style.fontSize = (run.font && run.font.size ? run.font.size : 10) + 'pt';
+      span.style.fontWeight = run.font && run.font.bold ? 'bold' : 'normal';
+      if (run.font && run.font.color && run.font.color.argb) {
+        span.style.color = '#' + String(run.font.color.argb).slice(2);
+      }
+      span.textContent = run.text;
+      probe.appendChild(span);
+    });
+    document.body.appendChild(probe);
+    var h = Math.ceil(probe.scrollHeight);
+    probe.remove();
+    return Math.max(32, h + 8);
+  }
+
+  function downloadArrayBuffer(buffer, filename) {
+    var blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  }
+
+  function exportScheduleExcel() {
+    if (typeof ExcelJS === 'undefined') {
+      alert('엑셀 라이브러리를 불러오지 못했습니다. 인터넷 연결 후 다시 시도해 주세요.');
+      return;
+    }
+    var grid = getActiveGrid();
+    if (!grid) {
+      alert('일정표를 찾지 못했습니다.');
+      return;
+    }
+
+    var prevLabel = excelBtn ? excelBtn.textContent : '';
+    if (excelBtn) {
+      excelBtn.disabled = true;
+      excelBtn.textContent = '엑셀 준비 중…';
+    }
+
+    var ROWS = 13;
+    var COLS = 7;
+    var COL_WIDTHS = [11, 36, 36, 36, 40, 36, 28];
+    var DAY_WIDTHS_PX = [100, 260, 260, 260, 290, 260, 200];
+    var border = {
+      top: { style: 'thin', color: { argb: 'FFB8D7EC' } },
+      bottom: { style: 'thin', color: { argb: 'FFB8D7EC' } },
+      left: { style: 'thin', color: { argb: 'FFB8D7EC' } },
+      right: { style: 'thin', color: { argb: 'FFB8D7EC' } }
+    };
+
+    try {
+      var slots = [];
+      var r, c;
+      for (r = 0; r < ROWS; r += 1) {
+        slots[r] = [];
+        for (c = 0; c < COLS; c += 1) slots[r][c] = null;
+      }
+
+      Array.prototype.forEach.call(grid.children, function (el) {
+        if (el.nodeType !== 1) return;
+        var styleText = el.getAttribute('style') || '';
+        var colSpan = parseGridSpan(styleText, 'grid-column');
+        var rowSpan = parseGridSpan(styleText, 'grid-row');
+        if (!colSpan || !rowSpan) return;
+
+        var col = colSpan.start - 1;
+        var rowStart = rowSpan.start - 1;
+        var rowEndEx = rowSpan.end - 1;
+        if (col < 0 || col >= COLS || rowStart < 0 || rowStart >= ROWS) return;
+
+        var last = Math.min(ROWS - 1, rowStart + Math.max(1, rowEndEx - rowStart) - 1);
+        var runs = scheduleCellRichText(el);
+        var neededPx = measureRichHeight(runs, DAY_WIDTHS_PX[col] || 260);
+        slots[rowStart][col] = {
+          runs: runs,
+          rowspan: last - rowStart + 1,
+          neededPx: neededPx,
+          isHeader: el.classList.contains('grid-header'),
+          isTime: el.classList.contains('grid-time'),
+          isEmpty: el.classList.contains('empty')
+        };
+      });
+
+      // 행 높이(pt): 병합 셀 내용이 모두 보이도록 합산 높이 확보
+      var rowNeedPt = [];
+      for (r = 0; r < ROWS; r += 1) rowNeedPt[r] = r === 0 ? 24 : 28;
+
+      function pxToPt(px) {
+        return Math.ceil(px * 0.8); // 여유 포함
+      }
+
+      for (r = 0; r < ROWS; r += 1) {
+        for (c = 0; c < COLS; c += 1) {
+          var slot = slots[r][c];
+          if (!slot || slot.isEmpty) continue;
+          var needPt = pxToPt(slot.neededPx);
+          var per = Math.ceil(needPt / slot.rowspan);
+          var rem = Math.max(0, needPt - per * slot.rowspan);
+          for (var i = 0; i < slot.rowspan; i += 1) {
+            rowNeedPt[r + i] = Math.max(rowNeedPt[r + i], per + (i === 0 ? rem : 0));
+          }
+        }
+      }
+      for (r = 0; r < ROWS; r += 1) {
+        for (c = 0; c < COLS; c += 1) {
+          var s = slots[r][c];
+          if (!s || s.rowspan <= 1 || s.isEmpty) continue;
+          var sum = 0;
+          for (var j = 0; j < s.rowspan; j += 1) sum += rowNeedPt[r + j];
+          var need = pxToPt(s.neededPx);
+          if (sum < need) rowNeedPt[r] += (need - sum);
+        }
+      }
+
+      var wb = new ExcelJS.Workbook();
+      var ws = wb.addWorksheet('일정표', {
+        views: [{ showGridLines: true }]
+      });
+      COL_WIDTHS.forEach(function (w, idx) {
+        ws.getColumn(idx + 1).width = w;
+      });
+
+      ws.mergeCells(1, 1, 1, COLS);
+      var titleCell = ws.getCell(1, 1);
+      titleCell.value = document.getElementById('page-title') ? document.getElementById('page-title').textContent : '(tentative) Circular Economy Participants Schedule';
+      titleCell.font = { name: '맑은 고딕', size: 16, bold: true, color: { argb: 'FF17304B' } };
+      titleCell.alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      ws.getRow(1).height = 26;
+      ws.getRow(2).height = 4;
+
+      var excelRow0 = 3;
+
+      for (r = 0; r < ROWS; r += 1) {
+        var excelRow = excelRow0 + r;
+        ws.getRow(excelRow).height = Math.min(420, Math.max(22, rowNeedPt[r]));
+        for (c = 0; c < COLS; c += 1) {
+          var cellInfo = slots[r][c];
+          if (!cellInfo) continue;
+          var startRow = excelRow;
+          var endRow = excelRow + cellInfo.rowspan - 1;
+          if (cellInfo.rowspan > 1) {
+            ws.mergeCells(startRow, c + 1, endRow, c + 1);
+          }
+          var cell = ws.getCell(startRow, c + 1);
+          cell.border = border;
+
+          var alignTop = { vertical: 'top', horizontal: 'left', wrapText: true };
+          var alignMid = { vertical: 'middle', horizontal: 'center', wrapText: true };
+
+          if (r === 0 && c === 0) {
+            cell.value = '시간';
+            cell.font = { name: '맑은 고딕', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF17304B' } };
+            cell.alignment = alignMid;
+          } else if (r === 0) {
+            cell.value = (cellInfo.runs && cellInfo.runs.length)
+              ? cellInfo.runs.map(function (x) { return x.text; }).join('').replace(/\n/g, '')
+              : '';
+            cell.font = { name: '맑은 고딕', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF087DB8' } };
+            cell.alignment = alignMid;
+          } else if (c === 0) {
+            var timeLabel = '';
+            var tEl = grid.querySelector('.grid-time[style*="grid-row: ' + (r + 1) + '"]');
+            if (tEl) {
+              var a = tEl.querySelector('.time-start');
+              var b = tEl.querySelector('.time-end');
+              timeLabel = ((a && a.textContent) || '') + '~' + ((b && b.textContent) || '');
+            }
+            cell.value = timeLabel;
+            cell.font = { name: '맑은 고딕', size: 10, bold: true, color: { argb: 'FF17304B' } };
+            cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFE8F4FC' } };
+            cell.alignment = alignMid;
+          } else if (!cellInfo.isEmpty && cellInfo.runs && cellInfo.runs.length) {
+            cell.value = { richText: cellInfo.runs };
+            cell.alignment = alignTop;
+            cell.font = { name: '맑은 고딕', size: 10 };
+          } else {
+            cell.value = '';
+            cell.alignment = alignTop;
+          }
+
+          // 병합 범위 전체에 상단정렬/테두리 재적용 (엑셀 기본 하단정렬 방지)
+          if (cellInfo.rowspan > 1) {
+            for (var mr = startRow; mr <= endRow; mr += 1) {
+              var mc = ws.getCell(mr, c + 1);
+              mc.border = border;
+              if (c > 0 && r > 0) mc.alignment = alignTop;
+            }
+            cell.alignment = (c === 0 || r === 0) ? alignMid : alignTop;
+          }
+        }
+      }
+
+      return wb.xlsx.writeBuffer().then(function (buffer) {
+        var stamp = new Date();
+        var y = stamp.getFullYear();
+        var m = String(stamp.getMonth() + 1).padStart(2, '0');
+        var d = String(stamp.getDate()).padStart(2, '0');
+        downloadArrayBuffer(buffer, '일정표_' + y + m + d + '.xlsx');
+      }).catch(function (err) {
+        console.error(err);
+        alert('일정표 엑셀 저장에 실패했습니다. 다시 시도해 주세요.');
+      }).then(function () {
+        if (excelBtn) {
+          excelBtn.disabled = false;
+          excelBtn.textContent = prevLabel || '엑셀 출력';
+        }
+      });
+    } catch (err) {
+      console.error(err);
+      alert('일정표 엑셀 저장에 실패했습니다. 다시 시도해 주세요.');
+      if (excelBtn) {
+        excelBtn.disabled = false;
+        excelBtn.textContent = prevLabel || '엑셀 출력';
+      }
+    }
+  }
+
+  if (excelBtn) {
+    excelBtn.addEventListener('click', function () {
+      exportScheduleExcel();
+    });
+  }
+
+  function clearPrintMode() {
+    bodyEl.classList.remove('printing-schedule-image', 'printing-personnel');
+    var imgRoot = document.getElementById('print-image-root');
+    if (imgRoot) imgRoot.remove();
+    var captureRoot = document.getElementById('print-capture-root');
+    if (captureRoot) captureRoot.remove();
+  }
+
+  function printPersonnel() {
+    clearPrintMode();
+    bodyEl.classList.add('printing-personnel');
+    window.print();
+    setTimeout(clearPrintMode, 800);
+  }
+
+  function printScheduleAsImage() {
+    if (typeof html2canvas !== 'function') {
+      alert('PDF 준비 라이브러리를 불러오지 못했습니다. 인터넷 연결 후 다시 시도해 주세요.');
+      return;
+    }
+
+    var header = document.querySelector('.header-container');
+    var wrap = getActiveWrap();
+    if (!header || !wrap) return;
+
+    var prevLabel = printBtn.textContent;
+    printBtn.disabled = true;
+    printBtn.textContent = 'PDF 준비 중…';
+
+    clearPrintMode();
+
+    // 월~토 전체 캡처 + 우측 여백 넉넉히 (인쇄 시 토요일 잘림 방지)
+    var TIME_COL = 48;
+    var DAY_COL = 320;
+    var GRID_GAPS = 6;
+    var PAD_L = 8;
+    var PAD_R = 64;
+    var GRID_W = TIME_COL + DAY_COL * 6 + GRID_GAPS;
+    var CAPTURE_W = PAD_L + GRID_W + PAD_R;
+    var captureRoot = document.createElement('div');
+    captureRoot.id = 'print-capture-root';
+    captureRoot.style.width = CAPTURE_W + 'px';
+    captureRoot.style.padding = '0 ' + PAD_R + 'px 0 ' + PAD_L + 'px';
+    captureRoot.style.boxSizing = 'border-box';
+    captureRoot.style.margin = '0';
+    captureRoot.style.overflow = 'visible';
+    captureRoot.style.background = '#ffffff';
+    var headerClone = header.cloneNode(true);
+    var navClone = headerClone.querySelector('.nav-tabs');
+    if (navClone) navClone.remove();
+    headerClone.style.margin = '0 0 10px';
+    headerClone.style.padding = '0';
+    headerClone.style.width = '100%';
+    var wrapClone = wrap.cloneNode(true);
+    wrapClone.style.overflow = 'visible';
+    wrapClone.style.width = GRID_W + 'px';
+    wrapClone.style.maxWidth = 'none';
+    wrapClone.style.margin = '0';
+    wrapClone.style.padding = '0';
+    wrapClone.style.boxShadow = 'none';
+    wrapClone.style.scrollbarGutter = 'auto';
+    var gridClone = wrapClone.querySelector('.schedule-grid');
+    if (gridClone) {
+      gridClone.style.setProperty('--day-col', DAY_COL + 'px');
+      gridClone.style.gridTemplateColumns = TIME_COL + 'px repeat(6, ' + DAY_COL + 'px)';
+      gridClone.style.minWidth = GRID_W + 'px';
+      gridClone.style.width = GRID_W + 'px';
+    }
+    // 캡처 중 셀 글자 잘림 방지
+    wrapClone.querySelectorAll('.grid-cell').forEach(function (cell) {
+      cell.style.overflow = 'visible';
+    });
+    captureRoot.appendChild(headerClone);
+    captureRoot.appendChild(wrapClone);
+    document.body.appendChild(captureRoot);
+
+    var measuredW = Math.max(
+      CAPTURE_W,
+      (captureRoot.scrollWidth || 0) + PAD_R,
+      (wrapClone.scrollWidth || 0) + PAD_L + PAD_R
+    );
+    captureRoot.style.width = measuredW + 'px';
+
+    html2canvas(captureRoot, {
+      scale: 2,
+      useCORS: true,
+      backgroundColor: '#ffffff',
+      width: measuredW,
+      windowWidth: measuredW + 40,
+      scrollX: 0,
+      scrollY: 0,
+      logging: false
+    }).then(function (canvas) {
+      captureRoot.remove();
+
+      // 캔버스 우측에 흰 여백 추가 (프린터 가장자리 잘림 완충)
+      var extra = 48;
+      var padded = document.createElement('canvas');
+      padded.width = canvas.width + extra;
+      padded.height = canvas.height;
+      var pctx = padded.getContext('2d');
+      pctx.fillStyle = '#ffffff';
+      pctx.fillRect(0, 0, padded.width, padded.height);
+      pctx.drawImage(canvas, 0, 0);
+
+      var imgRoot = document.createElement('div');
+      imgRoot.id = 'print-image-root';
+      var img = document.createElement('img');
+      img.alt = document.getElementById('page-title') ? document.getElementById('page-title').textContent : '(tentative) Circular Economy Participants Schedule';
+      img.src = padded.toDataURL('image/png');
+      imgRoot.appendChild(img);
+      document.body.appendChild(imgRoot);
+
+      function doPrint() {
+        bodyEl.classList.add('printing-schedule-image');
+        var styleHint = document.getElementById('print-page-hint');
+        if (!styleHint) {
+          styleHint = document.createElement('style');
+          styleHint.id = 'print-page-hint';
+          document.head.appendChild(styleHint);
+        }
+        styleHint.textContent = '@page { size: A4 portrait; margin: 5mm; }';
+        window.print();
+        setTimeout(function () {
+          clearPrintMode();
+          printBtn.disabled = false;
+          printBtn.textContent = prevLabel;
+        }, 800);
+      }
+
+      if (img.complete) doPrint();
+      else img.onload = doPrint;
+    }).catch(function () {
+      captureRoot.remove();
+      clearPrintMode();
+      printBtn.disabled = false;
+      printBtn.textContent = prevLabel;
+      alert('일정표 캡처에 실패했습니다. 다시 시도해 주세요.');
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener('click', function () {
+      printScheduleAsImage();
+    });
+  }
+
+  window.addEventListener('afterprint', clearPrintMode);
+})();
+</script>
+</body>
+</html>

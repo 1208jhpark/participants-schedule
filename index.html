@@ -179,11 +179,14 @@
     .grid-cell.mon-day .agenda-title,
     .grid-cell.mon-day .agenda-detail,
     .grid-cell.mon-day .agenda-detail b,
-    .grid-cell.mon-day .text-red,
     .grid-cell.mon-day .highlight-move,
     .grid-cell.mon-day .route-flow,
     .grid-cell.mon-day .route-step {
         color: #000;
+    }
+    .grid-cell.mon-day .text-red {
+        color: #dc2626;
+        font-weight: 700;
     }
     /* 월~목 URL 링크 앰버 */
     .grid-cell[style*="grid-column: 2"] a,
@@ -1260,7 +1263,7 @@
             <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>입국</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 11/23 07:40 (ICN 제2여객터미널)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 11/23 07:40 (ICN 제2여객터미널)<br><span class="text-red">(확정 전)</span></span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
                 </div>
             </div>
@@ -1633,7 +1636,7 @@
             <div class="grid-cell" style="grid-column: 5; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>입국</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 11/26 03:50 (ICN 제2여객터미널)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>입국: 11/26 03:50 (ICN 제2여객터미널)<br><span class="text-red">(확정 전)</span></span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 2</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 공항→호텔</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5; margin-bottom:6px;"><span class="sq"></span>호텔 내 사우나 이용</span>
@@ -1754,6 +1757,7 @@
                 <div class="agenda-split split-vline">
                     <div class="agenda-slot">
                         <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>출국</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>출국정보: 11/27 15:40 <span class="text-red">(확정 전)</span></span>
                         <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: MOI 3 · KTR 1 · BSN 3</span>
                     </div>
                     <div class="agenda-slot">
@@ -1809,7 +1813,7 @@
                 <div class="agenda-slot">
                     <span class="badge badge-checkout" style="font-size:14px;">풀만 체크아웃</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 호텔→공항 (1시간30분)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>차량이동: 호텔→공항 (1시간30분): BRIN 3 (1명 별도)</span>
                 </div>
             </div>
 
@@ -1817,7 +1821,8 @@
             <div class="grid-cell" style="grid-column: 7; grid-row: 6 / 14;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>출국</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 4</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>출국정보: 11/28 15:40 <span class="text-red">(확정 전)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>인원: BRIN 3</span>
                 </div>
             </div>
 
@@ -1912,7 +1917,7 @@
             <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/23 07:40 (ICN Terminal 2)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/23 07:40 (ICN Terminal 2)<br><span class="text-red">(TBD)</span></span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
                 </div>
             </div>
@@ -2285,7 +2290,7 @@
             <div class="grid-cell" style="grid-column: 5; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/26 03:50 (ICN Terminal 2)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/26 03:50 (ICN Terminal 2)<br><span class="text-red">(TBD)</span></span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 2</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Airport → hotel</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5; margin-bottom:6px;"><span class="sq"></span>Sauna use at hotel</span>
@@ -2406,6 +2411,7 @@
                 <div class="agenda-split split-vline">
                     <div class="agenda-slot">
                         <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Departure</span>
+                        <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Departure info: 11/27 15:40 <span class="text-red">(TBD)</span></span>
                         <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3</span>
                     </div>
                     <div class="agenda-slot">
@@ -2461,7 +2467,7 @@
                 <div class="agenda-slot">
                     <span class="badge badge-checkout" style="font-size:14px;">Pullman Check-out</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Hotel → airport (1 hr 30 min)</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Hotel → airport (1 hr 30 min): BRIN 3 (1 person separate)</span>
                 </div>
             </div>
 
@@ -2469,7 +2475,8 @@
             <div class="grid-cell" style="grid-column: 7; grid-row: 6 / 14;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Departure</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 4</span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Departure info: 11/28 15:40 <span class="text-red">(TBD)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 3</span>
                 </div>
             </div>
 

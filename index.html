@@ -48,6 +48,12 @@
         flex-shrink: 0;
         margin-left: auto;
         margin-right: 8px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        cursor: pointer;
+        font: inherit;
+        color: inherit;
     }
     .header-qr img {
         width: 88px;
@@ -58,6 +64,10 @@
         padding: 4px;
         box-sizing: border-box;
     }
+    .header-qr:hover img {
+        border-color: #8e2a3c;
+        box-shadow: 0 2px 10px rgba(142, 42, 60, 0.18);
+    }
     .header-qr-label {
         font-size: 11px;
         font-weight: 700;
@@ -65,6 +75,84 @@
         letter-spacing: 0.2px;
         white-space: nowrap;
     }
+    /* QR 확대 모달 */
+    .qr-modal {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 10000;
+        align-items: center;
+        justify-content: center;
+        padding: 16px;
+        box-sizing: border-box;
+    }
+    .qr-modal.is-open { display: flex; }
+    .qr-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(40, 10, 18, 0.55);
+    }
+    .qr-modal-panel {
+        position: relative;
+        z-index: 1;
+        width: min(420px, 100%);
+        background: #fff;
+        border: 1px solid #f0c9d1;
+        border-radius: 12px;
+        box-shadow: 0 20px 50px rgba(40, 10, 18, 0.28);
+        padding: 22px 20px 18px;
+        text-align: center;
+    }
+    .qr-modal-title {
+        margin: 0 0 6px;
+        font-size: 18px;
+        font-weight: 800;
+        color: #8e2a3c;
+    }
+    .qr-modal-sub {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #8d5c66;
+        word-break: break-all;
+        line-height: 1.45;
+    }
+    .qr-modal-img {
+        width: min(280px, 72vw);
+        height: auto;
+        aspect-ratio: 1;
+        display: block;
+        margin: 0 auto 16px;
+        background: #fff;
+        border: 1px solid #f3d0d7;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    .qr-modal-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    .qr-modal-btn {
+        min-height: 42px;
+        padding: 10px 18px;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        border: 1px solid #f0c9d1;
+        background: #fff;
+        color: #8e2a3c;
+        font-family: inherit;
+    }
+    .qr-modal-btn.primary {
+        background: #8e2a3c;
+        border-color: #8e2a3c;
+        color: #fff;
+    }
+    .qr-modal-btn.primary:hover { background: #6e1e2c; border-color: #6e1e2c; }
+    .qr-modal-btn:hover { background: #fdecef; }
+    #qr-print-root { display: none; }
     .eyebrow {
         color: #a33b4c; font-size: 16px; font-weight: 700; letter-spacing: 2px; margin-bottom: 8px;
     }
@@ -909,6 +997,39 @@
             print-color-adjust: exact;
         }
 
+        /* QR 전용 인쇄 */
+        body.printing-qr > *:not(#qr-print-root) {
+            display: none !important;
+        }
+        body.printing-qr #qr-print-root {
+            display: flex !important;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 24mm 16mm;
+            box-sizing: border-box;
+            text-align: center;
+        }
+        body.printing-qr #qr-print-root img {
+            width: 70mm;
+            height: 70mm;
+            display: block;
+            margin: 0 auto 8mm;
+        }
+        body.printing-qr #qr-print-root .qr-print-title {
+            font-size: 16pt;
+            font-weight: 800;
+            color: #000;
+            margin: 0 0 3mm;
+        }
+        body.printing-qr #qr-print-root .qr-print-url {
+            font-size: 10pt;
+            color: #333;
+            word-break: break-all;
+            margin: 0;
+        }
+
         /* 일정표: A4 세로 1장, 비율 유지(글자 늘어남 방지), 시간~토 전체 포함 */
         body.printing-schedule-image > *:not(#print-image-root) {
             display: none !important;
@@ -1261,13 +1382,30 @@
 </style>
 </head>
 <body>
+    <div class="qr-modal no-print" id="qr-modal" aria-hidden="true">
+        <div class="qr-modal-backdrop" id="qr-modal-backdrop"></div>
+        <div class="qr-modal-panel" role="dialog" aria-modal="true" aria-labelledby="qr-modal-title">
+            <h2 class="qr-modal-title" id="qr-modal-title">Schedule QR</h2>
+            <p class="qr-modal-sub" id="qr-modal-url">https://participantsschedule.vercel.app/#en</p>
+            <img class="qr-modal-img" id="qr-modal-img" alt="Large schedule QR code" width="280" height="280" src="https://api.qrserver.com/v1/create-qr-code/?size=560x560&amp;margin=12&amp;data=https%3A%2F%2Fparticipantsschedule.vercel.app%2F%23en">
+            <div class="qr-modal-actions">
+                <button type="button" class="qr-modal-btn primary" id="qr-modal-print">Print QR</button>
+                <button type="button" class="qr-modal-btn" id="qr-modal-close">Close</button>
+            </div>
+        </div>
+    </div>
+    <div id="qr-print-root" aria-hidden="true">
+        <p class="qr-print-title" id="qr-print-title">Participants Schedule</p>
+        <img id="qr-print-img" alt="Print QR" width="400" height="400" src="https://api.qrserver.com/v1/create-qr-code/?size=560x560&amp;margin=12&amp;data=https%3A%2F%2Fparticipantsschedule.vercel.app%2F%23en">
+        <p class="qr-print-url" id="qr-print-url">https://participantsschedule.vercel.app/#en</p>
+    </div>
     <div class="header-container">
         <div class="header-top">
             <h1 id="page-title">(tentative) Circular Economy Participants Schedule</h1>
-            <a class="header-qr" id="header-qr" href="https://participantsschedule.vercel.app/#en" target="_blank" rel="noopener noreferrer" title="Open schedule page">
+            <button type="button" class="header-qr" id="header-qr" title="Enlarge / print QR">
                 <img id="header-qr-img" alt="Schedule QR code" width="88" height="88" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;margin=8&amp;data=https%3A%2F%2Fparticipantsschedule.vercel.app%2F%23en">
                 <span class="header-qr-label" id="header-qr-label">Scan / QR</span>
-            </a>
+            </button>
             <div class="nav-tabs no-print">
                 <div class="nav-shortcut-row">
                     <a class="nav-shortcut" href="https://ce-workshop-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="Circular Economy Workshop">Circular Economy Workshop ↗</a>
@@ -2706,15 +2844,29 @@
     if (helperNote && meta[currentLang]) helperNote.textContent = meta[currentLang].helper;
     document.documentElement.lang = currentLang === 'en' ? 'en' : 'ko';
     try { history.replaceState(null, '', '#' + currentLang); } catch (e) {}
-    var qrLink = document.getElementById('header-qr');
+    var pageUrl = 'https://participantsschedule.vercel.app/#' + currentLang;
+    var qrSmallSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + encodeURIComponent(pageUrl);
+    var qrLargeSrc = 'https://api.qrserver.com/v1/create-qr-code/?size=560x560&margin=12&data=' + encodeURIComponent(pageUrl);
     var qrImg = document.getElementById('header-qr-img');
     var qrLabel = document.getElementById('header-qr-label');
-    var pageUrl = 'https://participantsschedule.vercel.app/#' + currentLang;
-    if (qrLink) qrLink.href = pageUrl;
-    if (qrImg) {
-      qrImg.src = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&margin=8&data=' + encodeURIComponent(pageUrl);
-    }
+    var qrModalImg = document.getElementById('qr-modal-img');
+    var qrModalUrl = document.getElementById('qr-modal-url');
+    var qrModalTitle = document.getElementById('qr-modal-title');
+    var qrPrintImg = document.getElementById('qr-print-img');
+    var qrPrintUrl = document.getElementById('qr-print-url');
+    var qrPrintTitle = document.getElementById('qr-print-title');
+    var qrPrintBtn = document.getElementById('qr-modal-print');
+    var qrCloseBtn = document.getElementById('qr-modal-close');
+    if (qrImg) qrImg.src = qrSmallSrc;
+    if (qrModalImg) qrModalImg.src = qrLargeSrc;
+    if (qrPrintImg) qrPrintImg.src = qrLargeSrc;
+    if (qrModalUrl) qrModalUrl.textContent = pageUrl;
+    if (qrPrintUrl) qrPrintUrl.textContent = pageUrl;
     if (qrLabel) qrLabel.textContent = currentLang === 'en' ? 'Scan / QR' : 'QR 스캔';
+    if (qrModalTitle) qrModalTitle.textContent = currentLang === 'en' ? 'Schedule QR' : '일정표 QR';
+    if (qrPrintTitle) qrPrintTitle.textContent = currentLang === 'en' ? 'Participants Schedule' : '참여자용 일정표';
+    if (qrPrintBtn) qrPrintBtn.textContent = currentLang === 'en' ? 'Print QR' : 'QR 인쇄';
+    if (qrCloseBtn) qrCloseBtn.textContent = currentLang === 'en' ? 'Close' : '닫기';
     window.scrollTo(0, 0);
     // refresh top scroll width for active grid
     var topInner = document.getElementById('table-scroll-top-inner');
@@ -2724,6 +2876,40 @@
 
   if (btnEn) btnEn.addEventListener('click', function () { setLang('en'); });
   if (btnKo) btnKo.addEventListener('click', function () { setLang('ko'); });
+
+  /* QR 확대 / 인쇄 */
+  (function qrModalControl() {
+    var openBtn = document.getElementById('header-qr');
+    var modal = document.getElementById('qr-modal');
+    var backdrop = document.getElementById('qr-modal-backdrop');
+    var closeBtn = document.getElementById('qr-modal-close');
+    var printBtn = document.getElementById('qr-modal-print');
+    if (!openBtn || !modal) return;
+
+    function openModal() {
+      modal.classList.add('is-open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeModal() {
+      modal.classList.remove('is-open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+    openBtn.addEventListener('click', openModal);
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+    if (closeBtn) closeBtn.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+    });
+    if (printBtn) {
+      printBtn.addEventListener('click', function () {
+        document.body.classList.add('printing-qr');
+        window.print();
+      });
+    }
+    window.addEventListener('afterprint', function () {
+      document.body.classList.remove('printing-qr');
+    });
+  })();
 
   var hash = (location.hash || '').replace('#', '');
   setLang(hash === 'ko' ? 'ko' : 'en');

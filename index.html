@@ -37,6 +37,18 @@
         gap: 20px;
         flex-wrap: wrap;
     }
+    .header-top > h1 {
+        flex: 1 1 280px;
+        min-width: 0;
+    }
+    .header-actions {
+        display: flex;
+        align-items: flex-start;
+        justify-content: flex-end;
+        gap: 12px;
+        flex: 0 1 auto;
+        margin-left: auto;
+    }
     .header-top .nav-tabs {
         margin-top: 0;
     }
@@ -46,8 +58,7 @@
         align-items: center;
         gap: 4px;
         flex-shrink: 0;
-        margin-left: auto;
-        margin-right: 8px;
+        margin: 0;
         padding: 0;
         border: none;
         background: transparent;
@@ -965,20 +976,23 @@
         body { margin: 10px 8px; }
         .header-container { margin-top: 12px; margin-bottom: 12px; }
         .header-top { gap: 12px; }
+        .header-top > h1 { flex: 1 1 100%; }
+        .header-actions {
+            width: 100%;
+            margin-left: 0;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+        }
         h1 { font-size: 26px; letter-spacing: -1px; }
         h1:before { height: 30px; top: 2px; }
         .eyebrow { font-size: 13px; letter-spacing: 1.5px; }
         .header-qr {
-            margin-left: 0;
-            margin-right: 0;
-            order: 3;
-            width: 100%;
             flex-direction: row;
             justify-content: flex-start;
             gap: 10px;
         }
         .header-qr img { width: 64px; height: 64px; }
-        .nav-tabs { min-width: 0; width: 100%; }
+        .nav-tabs { min-width: 0; flex: 1 1 260px; width: auto; }
         .schedule-grid {
             --day-col: min(320px, max(260px, calc(100vw - 64px)));
         }
@@ -1402,22 +1416,24 @@
     <div class="header-container">
         <div class="header-top">
             <h1 id="page-title">(tentative) Circular Economy Participants Schedule</h1>
-            <button type="button" class="header-qr" id="header-qr" title="Enlarge / print QR">
-                <img id="header-qr-img" alt="Schedule QR code" width="88" height="88" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;margin=8&amp;data=https%3A%2F%2Fparticipantsschedule.vercel.app%2F%23en">
-                <span class="header-qr-label" id="header-qr-label">Scan / QR</span>
-            </button>
-            <div class="nav-tabs no-print">
-                <div class="nav-shortcut-row">
-                    <a class="nav-shortcut" href="https://ce-workshop-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="Circular Economy Workshop">Circular Economy Workshop ↗</a>
-                    <a class="nav-shortcut" href="https://aktd-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="ASEAN–Korea Think Tank Dialogue">ASEAN–Korea Think Tank Dialogue ↗</a>
+            <div class="header-actions">
+                <button type="button" class="header-qr" id="header-qr" title="Enlarge / print QR">
+                    <img id="header-qr-img" alt="Schedule QR code" width="88" height="88" src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&amp;margin=8&amp;data=https%3A%2F%2Fparticipantsschedule.vercel.app%2F%23en">
+                    <span class="header-qr-label" id="header-qr-label">Scan / QR</span>
+                </button>
+                <div class="nav-tabs no-print">
+                    <div class="nav-shortcut-row">
+                        <a class="nav-shortcut" href="https://ce-workshop-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="Circular Economy Workshop">Circular Economy Workshop ↗</a>
+                        <a class="nav-shortcut" href="https://aktd-2026.vercel.app/" target="_blank" rel="noopener noreferrer" title="ASEAN–Korea Think Tank Dialogue">ASEAN–Korea Think Tank Dialogue ↗</a>
+                    </div>
+                    <div class="nav-tabs-row">
+                        <button type="button" class="nav-tab is-active" data-lang="en" id="btn-lang-en">English</button>
+                        <button type="button" class="nav-tab" data-lang="ko" id="btn-lang-ko">Korea</button>
+                        <button type="button" class="btn-excel" id="btn-excel" title="Export schedule to Excel">Excel Export</button>
+                        <button type="button" class="btn-print" id="btn-print" title="Export as A4 portrait PDF">PDF Export</button>
+                    </div>
+                    <p class="nav-helper-note" id="nav-helper-note">Available online (If offline, export via Excel or PDF above in advance)</p>
                 </div>
-                <div class="nav-tabs-row">
-                    <button type="button" class="nav-tab is-active" data-lang="en" id="btn-lang-en">English</button>
-                    <button type="button" class="nav-tab" data-lang="ko" id="btn-lang-ko">Korea</button>
-                    <button type="button" class="btn-excel" id="btn-excel" title="Export schedule to Excel">Excel Export</button>
-                    <button type="button" class="btn-print" id="btn-print" title="Export as A4 portrait PDF">PDF Export</button>
-                </div>
-                <p class="nav-helper-note" id="nav-helper-note">Available online (If offline, export via Excel or PDF above in advance)</p>
             </div>
         </div>
     </div>
@@ -2182,7 +2198,7 @@
             <div class="grid-cell mon-day" style="grid-column: 2; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/23 07:40 (ICN Terminal 2)<br><span class="text-red">(TBD)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/23 07:40 (ICN Terminal 2)</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: MOI 3 · KTR 1 · BSN 3 · BRIN 2</span>
                 </div>
             </div>
@@ -2555,7 +2571,7 @@
             <div class="grid-cell" style="grid-column: 5; grid-row: 2;">
                 <div class="agenda-slot">
                     <span class="badge" style="font-size:14px;"><span class="plane-ico">✈</span>Arrival</span>
-                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/26 03:50 (ICN Terminal 2)<br><span class="text-red">(TBD)</span></span>
+                    <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Arrival: 11/26 03:50 (ICN Terminal 2)</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Participants: BRIN 1</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5;"><span class="sq"></span>Car transfer: Airport → hotel</span>
                     <span style="display:block; font-size:14px; color:#000; line-height:1.5; margin-bottom:6px;"><span class="sq"></span>Sauna use at hotel</span>
